@@ -31,7 +31,7 @@ Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
 Version:        2.6.9
-Release:        6%{?dist}
+Release:        7%{?dist}
 %define binver 2.6
 %define gimp_lang_ver 20
 %define interfacever 2.0
@@ -512,6 +512,10 @@ fi
 %{_libdir}/gimp/%{interfacever}/plug-ins/help-browser
 
 %changelog
+* Fri Jun 20 2014 Tomas Popela <tpopela@redhat.com> - 2:2.6.9-7
+- Rebuild against new webkitgtk
+- Resolves: rhbz#1101403
+
 * Tue Nov 26 2013 Nils Philippsen <nils@redhat.com> - 2:2.6.9-6
 - fix overflow in XWD loader (CVE-2013-1913, CVE-2013-1978)
 
