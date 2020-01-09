@@ -31,7 +31,7 @@ Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
 Version:        2.6.9
-Release:        7%{?dist}
+Release:        8%{?dist}
 %define binver 2.6
 %define gimp_lang_ver 20
 %define interfacever 2.0
@@ -115,6 +115,14 @@ Requires:       hicolor-icon-theme
 Requires:       pygtk2 >= 2.10.4
 Requires:       xdg-utils
 Requires:       gimp-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+
+# Allow old versions of the help-browser subpackage to remain installed with
+# new gimp packages. Provide old EVRs from before gimp-help-browser was moved
+# to the optional channel.
+Provides:       gimp%{?_isa} = 2:2.6.9-4.el6
+Provides:       gimp%{?_isa} = 2:2.6.9-4.el6_1.1
+Provides:       gimp%{?_isa} = 2:2.6.9-4.el6_3.3
+Provides:       gimp%{?_isa} = 2:2.6.9-6.el6_5
 
 Source0:        ftp://ftp.gimp.org/pub/gimp/v%{binver}/gimp-%{version}.tar.bz2
 # distro specific: use xdg-open instead of firefox as web browser
@@ -512,6 +520,10 @@ fi
 %{_libdir}/gimp/%{interfacever}/plug-ins/help-browser
 
 %changelog
+* Thu Nov 13 2014 Nils Philippsen <nils@redhat.com> - 2:2.6.9-8
+- allow old versions of gimp-help-browser to remain installed with new gimp
+  versions (#1163136)
+
 * Fri Jun 20 2014 Tomas Popela <tpopela@redhat.com> - 2:2.6.9-7
 - Rebuild against new webkitgtk
 - Resolves: rhbz#1101403
