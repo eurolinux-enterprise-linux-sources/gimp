@@ -31,7 +31,7 @@ Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
 Version:        2.6.9
-Release:        4%{?dist}.3
+Release:        6%{?dist}
 %define binver 2.6
 %define gimp_lang_ver 20
 %define interfacever 2.0
@@ -151,6 +151,11 @@ Patch9:         gimp-2.6.9-CVE-2012-3403.patch
 # CVE-2012-3481
 # https://bugzilla.redhat.com/show_bug.cgi?id=847303
 Patch10:        gimp-2.6.9-CVE-2012-3481.patch
+# CVE-2012-5576
+# https://bugzilla.redhat.com/show_bug.cgi?id=879302
+Patch11:        gimp-2.6.9-CVE-2012-5576.patch
+# CVE-2013-1913, CVE-2013-1978
+Patch12:        gimp-2.6.9-CVE-2013-1913,1978.patch
 # files changed by autoreconf after applying the above
 Patch100:       gimp-2.6.9-3-autoreconf.patch.bz2
 
@@ -242,6 +247,8 @@ EOF
 %patch8 -p1 -b .CVE-2011-2896
 %patch9 -p1 -b .CVE-2012-3403
 %patch10 -p1 -b .CVE-2012-3481
+%patch11 -p1 -b .CVE-2012-5576
+%patch12 -p1 -b .CVE-2013-1913,1978
 
 %patch100 -p1 -b .autoreconf
 
@@ -505,10 +512,16 @@ fi
 %{_libdir}/gimp/%{interfacever}/plug-ins/help-browser
 
 %changelog
-* Thu Aug 16 2012 Nils Philippsen <nils@redhat.com> - 2:2.6.9-4.3
+* Tue Nov 26 2013 Nils Philippsen <nils@redhat.com> - 2:2.6.9-6
+- fix overflow in XWD loader (CVE-2013-1913, CVE-2013-1978)
+
+* Wed Mar 27 2013 Nils Philippsen <nils@redhat.com> - 2:2.6.9-5
+- fix overflow in XWD loader (#879302)
+
+* Thu Aug 16 2012 Nils Philippsen <nils@redhat.com> - 2:2.6.9-5
 - fix overflow in GIF loader (#847303)
 
-* Thu Jul 19 2012 Nils Philippsen <nils@redhat.com> - 2:2.6.9-4.2
+* Thu Jul 19 2012 Nils Philippsen <nils@redhat.com> - 2:2.6.9-5
 - fix overflows in GIF, CEL loaders (#727800, #839020)
 
 * Wed May 18 2011 Nils Philippsen <nils@redhat.com> - 2:2.6.9-4.1
@@ -1820,7 +1833,7 @@ fi
 * Thu Jul 13 2000 Prospector <bugzilla@redhat.com>
 - automatic rebuild
 
-* Fri Jul  1 2000 Matt Wilson <msw@redhat.com>
+* Sat Jul  1 2000 Matt Wilson <msw@redhat.com>
 - 1.1.24
 
 * Sat Jun 17 2000 Matt Wilson <msw@redhat.com>
