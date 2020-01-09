@@ -31,7 +31,7 @@ Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
 Version:        2.6.9
-Release:        8%{?dist}
+Release:        9%{?dist}
 %define binver 2.6
 %define gimp_lang_ver 20
 %define interfacever 2.0
@@ -164,6 +164,15 @@ Patch10:        gimp-2.6.9-CVE-2012-3481.patch
 Patch11:        gimp-2.6.9-CVE-2012-5576.patch
 # CVE-2013-1913, CVE-2013-1978
 Patch12:        gimp-2.6.9-CVE-2013-1913,1978.patch
+# fix bug with num_thread error message on startup
+# https://bugzilla.redhat.com/show_bug.cgi?id=1150021
+Patch13:        gimp-2.6.9-num-cpu.patch
+# fix bug with GLib warning message
+# https://bugzilla.redhat.com/show_bug.cgi?id=1157037
+Patch14:        gimp-2.6.9-g-option-arg.patch
+# fix bug with thumb image text position in Open image dialog
+# https://bugzilla.redhat.com/show_bug.cgi?id=1158426
+Patch15:        gimp-2.6.9-thumb-position.patch
 # files changed by autoreconf after applying the above
 Patch100:       gimp-2.6.9-3-autoreconf.patch.bz2
 
@@ -257,6 +266,9 @@ EOF
 %patch10 -p1 -b .CVE-2012-3481
 %patch11 -p1 -b .CVE-2012-5576
 %patch12 -p1 -b .CVE-2013-1913,1978
+%patch13 -p1 -b .num-cpu
+%patch14 -p1 -b .g-option-arg
+%patch15 -p1 -b .thumb-position
 
 %patch100 -p1 -b .autoreconf
 
@@ -520,6 +532,11 @@ fi
 %{_libdir}/gimp/%{interfacever}/plug-ins/help-browser
 
 %changelog
+* Wed Aug 31 2016 Josef Ridky <jridky@redhat.com> - 2:2.6.9-9
+- fix bug with num_threads error message on gimp startup (#1150021)
+- fix bug with showing GLib warning message on startup from terminal (#1157037)
+- fix bug with incorrect thumb image text offset (#1158426)
+
 * Thu Nov 13 2014 Nils Philippsen <nils@redhat.com> - 2:2.6.9-8
 - allow old versions of gimp-help-browser to remain installed with new gimp
   versions (#1163136)

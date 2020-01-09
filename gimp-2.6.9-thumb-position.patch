@@ -1,0 +1,33 @@
+diff -urNp orig/app/widgets/gimpthumbbox.c new/app/widgets/gimpthumbbox.c
+--- orig/app/widgets/gimpthumbbox.c	2009-07-20 22:20:51.000000000 +0200
++++ new/app/widgets/gimpthumbbox.c	2016-08-31 15:09:30.745730158 +0200
+@@ -523,12 +523,29 @@ gimp_thumb_box_thumbnail_clicked (GtkWid
+                                     (state & GDK_CONTROL_MASK) ? TRUE : FALSE);
+ }
+ 
++/*  bugfix #1158426  */
++static void
++gimp_thumb_box_bugfix(GtkWidget      *widget,
++                      GtkAllocation  *allocation,
++                      gpointer        data)
++{
++  gtk_widget_queue_resize (widget);
++
++  g_signal_handlers_disconnect_by_func (widget,
++                                        gimp_thumb_box_bugfix,
++                                        data);
++}
++
+ static void
+ gimp_thumb_box_imagefile_info_changed (GimpImagefile *imagefile,
+                                        GimpThumbBox  *box)
+ {
+   gtk_label_set_text (GTK_LABEL (box->info),
+                       gimp_imagefile_get_desc_string (imagefile));
++
++  g_signal_connect_after (box->info, "size-allocate",
++                          G_CALLBACK (gimp_thumb_box_bugfix),
++                          "message");
+ }
+ 
+ static void

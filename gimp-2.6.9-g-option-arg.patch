@@ -1,0 +1,12 @@
+diff -urNp orig/app/main.c new/app/main.c
+--- orig/app/main.c	2009-07-20 22:20:51.000000000 +0200
++++ new/app/main.c	2016-08-31 14:56:30.374206526 +0200
+@@ -236,7 +236,7 @@ static const GOptionEntry main_entries[]
+     N_("Debug in case of a crash (never|query|always)"), "<mode>"
+   },
+   {
+-    "debug-handlers", 0, G_OPTION_FLAG_NO_ARG,
++    "debug-handlers", 0, 0,
+     G_OPTION_ARG_NONE, &use_debug_handler,
+     N_("Enable non-fatal debugging signal handlers"), NULL
+   },
