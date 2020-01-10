@@ -203,7 +203,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/gimp-zip.in $(srcdir)/gimp.pc.in \
 	$(srcdir)/gimpthumb.pc.in $(srcdir)/gimpui.pc.in AUTHORS \
 	COPYING ChangeLog INSTALL NEWS README compile config.guess \
-	config.sub depcomp install-sh ltmain.sh missing py-compile
+	config.sub install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -418,6 +418,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 LT_CURRENT_MINUS_AGE = @LT_CURRENT_MINUS_AGE@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 LT_VERSION_INFO = @LT_VERSION_INFO@
 MAIL = @MAIL@
 MAINT = @MAINT@
@@ -639,6 +640,7 @@ EXTRA_DIST = \
 	NEWS.pre-2-2		\
 	NEWS.pre-2-4		\
 	NEWS.pre-2-6		\
+	NEWS.pre-2-8		\
 	README			\
 	README.i18n		\
 	authors.dtd		\

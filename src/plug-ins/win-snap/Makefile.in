@@ -361,6 +361,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 LT_CURRENT_MINUS_AGE = @LT_CURRENT_MINUS_AGE@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 LT_VERSION_INFO = @LT_VERSION_INFO@
 MAIL = @MAIL@
 MAINT = @MAINT@
@@ -896,7 +897,7 @@ uninstall-am: uninstall-libexecPROGRAMS
 
 
 winsnap-win32res.o: winsnap.rc select.cur small.ico winsnap.ico
-	$(WINDRES) winsnap.rc winsnap-win32res.o
+	$(WINDRES) $(srcdir)/winsnap.rc winsnap-win32res.o
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

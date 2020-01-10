@@ -7,6 +7,211 @@ This is the stable branch of GIMP. No new features are being added
 here, just bug-fixes.
 
 
+Overview of Changes from GIMP 2.8.20 to GIMP 2.8.22
+===================================================
+
+GUI:
+
+ - improve drawing performance in single window mode, especially with
+   pixmap themes
+
+
+macOS DMG:
+
+ - Make the launcher script also set BABL_PATH
+ - Add patch for GTK+ Bug 743717 to the build which concerns crashes
+   during clipboard operations with a clipboard manager active
+ - Add patch for GTK+ Bug 767091 to the build which concerns crashes
+   on some drag & drop operations
+ - generate OSX package metadata during build
+
+
+Plug-ins:
+
+ - Fix for CVE-2007-3126, a bug in the ICO plug-in which allowed
+   context-dependent attackers to cause a denial of service (crash)
+   via an ICO file with an InfoHeader containing a Height of zero.
+   We couldn't reproduce any crash in recent version, but fixed the
+   error messages for good measure
+ - Avoid creating wrong layer group structure when importing PSD
+   files (already fixed in 2.8.20, didn't make it to the NEWS)
+ - Prevent a crash in PDF plug-in if images or resolution are large
+ - stop parsing invalid PCX files early and prevent a segmentation fault
+
+
+General:
+
+ - if NOCONFIGURE is set, autogen.sh won't run configure
+ - VPATH builds for win32 targets have been fixed
+
+
+Updated Translations:
+
+ - Basque
+ - Brazilian Portuguese
+ - Catalan
+ - Chinese (PRC)
+ - Finnish
+ - Greek
+ - Hungarian
+ - Italian
+ - Kazakh
+ - Norwegian
+ - Polish
+ - Slovenian
+ - Spanish
+ - Swedish
+
+
+Overview of Changes from GIMP 2.8.18 to GIMP 2.8.20
+===================================================
+
+
+Core:
+
+ - Avoid D-Bus error message when built without D-Bus support
+ - fix OS X min required conditional in gimpimagewindow.c
+ - Saving to existing .xcf.bz and .xcf.gz files didn't truncate them
+   and could lead to unnecessarily large files
+ - Text layer created by gimp-text-fontname doesn't respect border
+   when resized
+ - Avoid seeking when saving XCF files to prevent corruption with
+   file network shares (fixed since 2014, but not mentioned in NEWS yet)
+
+
+GUI:
+
+ - Flow on Paint Dynamics editor dialog: the 'y' axis is indicating
+   'Rate' instead 'Flow'
+ - Vertical ruler shows artifacts if the status bar isn't showing
+ - Tablet stylus misbehaves when crossing the edge of a dock in
+   multi-window-mode
+ - Disable the new "automatic window tabbing" feature introduced on macOS
+   Sierra
+ - Improve the visibility of slider handles with dark themes
+ - Make it harder to switch to renaming if selecting already selected
+   items in resource lists
+
+
+Tools:
+
+ - make toggling to color picker mode of paint tools more robust
+
+
+Libgimp:
+
+ - call gimp_file_entry_set_filename() with filename encoding
+
+
+Windows Installer:
+
+ - Reduce the memory requirement when running the installer (has
+   already been shipped in a 2.8.18 installer-only update)
+ - Ship an updated libcairo to fix GTK+ UI rendering problems, like
+   missing palette border/bevel and shadows under tab labels
+
+
+macOS DMG:
+
+ - Ship the Tango icon theme with the DMG for a complete set of icons
+ - fix the way mime data is copied into the bundle
+ - no longer copy Pango modules into the bundle
+ - prevent a crash caused by drag&drop on OSX by patching the included
+   GTK+
+ - ship a patch for gettext to make sure the preferred UI language
+   will be used
+
+
+Plug-ins:
+
+ - Prevent the Python console from closing by the Escape key
+ - Help browser does not launch on OS X
+ - Filter 'Edge Detect/Difference of Gaussians' returns empty image
+ - only use -xobjective-c for compile commands
+ - mkgen.pl: fix calls to write_file() routine to write to current
+   directory
+ - When printing, the images are composed onto a white background to
+   prevent printing a black box instead of a transparent image
+ - Fix color vision deficiency display filters to apply gamma
+   correction directly
+
+
+Updated Translations:
+
+ - Catalan
+ - Czech
+ - Danish
+ - Finnish
+ - French
+ - German
+ - Greek
+ - Hungarian
+ - Icelandic
+ - Italian
+ - Polish
+ - Portuguese
+ - Slovak
+ - Slovenian
+ - Scottish Gaelic
+ - Spanish
+ - Swedish
+
+
+General:
+
+ - Bug fixes
+
+
+Overview of Changes from GIMP 2.8.16 to GIMP 2.8.18
+===================================================
+
+
+Core:
+
+ - Initialize fontconfig cache in separate thread to keep GUI
+   responsive on first startup
+ - Properly recognize layer masks as deactivated, e.g. for moving layers
+ - Create $XDG_DATA_HOME if it doesn't exist
+ - (CVE-2016-4994) Multiple Use-After-Free when parsing XCF channel
+   and layer properties
+ - Fix progress access to prevent crash on rapid sequence of commands
+ - Fix crash in gimp-gradient-segment-range-move
+
+
+GUI:
+
+ - Disable color picker buttons on OS X to prevent a GUI lockup
+ - Disable "new-style" full-screen mode on OS X to prevent a crash
+ - Pulsing progress bar in splash screen to indicate unknown durations
+ - Fix gamut warning color for lcms display filter
+ - Fix unbolding of bold font on edit
+ - Prevent accidental renaming of wrong adjacent item
+
+
+Installer:
+
+ - Change compression settings to decrease size by 20%
+ - Add Catalan, Danish, French, Dutch
+
+
+Plug-ins:
+
+ - Fix crash on sRGB JPEG image drag & drop
+ - Fix ambiguous octal-escaped output of c-source
+ - Fix KISS CEL export
+ - Fix progress bar for file-compressor
+ - Make Script-Fu regex match return proper character indexes for
+   Unicode characters
+ - Fix Script-Fu modulo for large numbers
+
+
+General:
+
+ - Documentation updates
+ - Bug fixes
+ - Translation updates
+
+
 Overview of Changes from GIMP 2.8.14 to GIMP 2.8.16
 ===================================================
 

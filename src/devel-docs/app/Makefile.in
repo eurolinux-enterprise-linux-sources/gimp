@@ -309,6 +309,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 LT_CURRENT_MINUS_AGE = @LT_CURRENT_MINUS_AGE@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 LT_VERSION_INFO = @LT_VERSION_INFO@
 MAIL = @MAIL@
 MAINT = @MAINT@
@@ -792,9 +793,9 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 @ENABLE_GTK_DOC_APP_FALSE@distclean-local:
 @ENABLE_GTK_DOC_APP_FALSE@clean-local:
+@ENABLE_GTK_DOC_APP_FALSE@install-data-local:
 @ENABLE_GTK_DOC_APP_FALSE@uninstall-local:
 @ENABLE_GTK_DOC_APP_FALSE@maintainer-clean-local:
-@ENABLE_GTK_DOC_APP_FALSE@install-data-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-local mostlyclean-am
@@ -935,7 +936,7 @@ uninstall-am: uninstall-local
 @ENABLE_GTK_DOC_APP_TRUE@$(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt: scan-build.stamp
 @ENABLE_GTK_DOC_APP_TRUE@	@true
 
-@ENABLE_GTK_DOC_APP_TRUE@sgml-build.stamp: setup-build.stamp $(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt $(expand_content_files) xml/gtkdocentities.ent
+@ENABLE_GTK_DOC_APP_TRUE@sgml-build.stamp: setup-build.stamp $(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(HFILE_GLOB) $(CFILE_GLOB) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt $(expand_content_files) xml/gtkdocentities.ent
 @ENABLE_GTK_DOC_APP_TRUE@	$(GTK_DOC_V_XML)_source_dir='' ; \
 @ENABLE_GTK_DOC_APP_TRUE@	for i in $(DOC_SOURCE_DIR) ; do \
 @ENABLE_GTK_DOC_APP_TRUE@	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
@@ -979,6 +980,7 @@ uninstall-am: uninstall-local
 @ENABLE_GTK_DOC_APP_TRUE@	  if test -f $(abs_builddir)/$$file ; then \
 @ENABLE_GTK_DOC_APP_TRUE@	    cp $(abs_builddir)/$$file $(abs_builddir)/html; \
 @ENABLE_GTK_DOC_APP_TRUE@	  fi; \
+@ENABLE_GTK_DOC_APP_TRUE@	  test -f $$file && cp $$file $(abs_builddir)/html; \
 @ENABLE_GTK_DOC_APP_TRUE@	done;
 @ENABLE_GTK_DOC_APP_TRUE@	$(GTK_DOC_V_XREF)gtkdoc-fixxref --module=$(DOC_MODULE) --module-dir=html --html-dir=$(HTML_DIR) $(FIXXREF_OPTIONS)
 @ENABLE_GTK_DOC_APP_TRUE@	$(AM_V_at)touch html-build.stamp

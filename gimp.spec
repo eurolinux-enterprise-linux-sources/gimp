@@ -81,8 +81,8 @@
 Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
-Version:        2.8.16
-Release:        %{?prerelprefix}3%{dotprerel}%{dotgitrev}%{?dist}
+Version:        2.8.22
+Release:        %{?prerelprefix}1%{dotprerel}%{dotgitrev}%{?dist}
 
 # Compute some version related macros.
 # Ugly, need to get quoting percent signs straight.
@@ -207,13 +207,6 @@ Patch0:         gimp-%{version}%{dashprerel}-git%{gitrev}.patch.bz2
 # Fedora specific.
 Patch1:         gimp-2.8.2-cm-system-monitor-profile-by-default.patch
 
-# CVE-2016-4994: Fix multiple use-after-free when parsing XCF channel and layer
-# properties
-# Upstream commit:
-# gimp-2-8: e82aaa4b4ee0703c879e35ea9321fff6be3e9b6f
-# master:   6d804bf9ae77bc86a0a97f9b944a129844df9395
-Patch2:         gimp-2.8.16-CVE-2016-4994.patch
-
 # use external help browser directly if help browser plug-in is not built
 Patch100:       gimp-2.8.6-external-help-browser.patch
 
@@ -303,7 +296,6 @@ EOF
 %endif
 
 %patch1 -p1 -b .cm-system-monitor-profile-by-default
-%patch2 -p1 -b .CVE-2016-4994
 
 %if ! %{with helpbrowser}
 %patch100 -p1 -b .external-help-browser
@@ -665,6 +657,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %endif
 
 %changelog
+* Tue Jul 18 2017 Josef Ridky <jridky@redhat.com> - 2:2.8.22-1
+- Rebase to the latest upstream release (2.8.22) - (#1210840)
+
 * Thu Jun 30 2016 Nils Philippsen <nils@redhat.com> - 2:2.8.16-3
 - fix multiple use-after-free bugs when parsing XCF channel and layer
   properties (#1348617)
