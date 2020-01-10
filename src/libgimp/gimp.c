@@ -261,6 +261,40 @@ gimp_main (const GimpPlugInInfo *info,
     if (p_SetDllDirectoryA)
       (*p_SetDllDirectoryA) ("");
   }
+
+  /* On Windows, set DLL search path to $INSTALLDIR/bin so that GEGL
+     file operations can find their respective file library DLLs (such
+     as jasper, etc.) without needing to set external PATH. */
+  {
+    const gchar *install_dir;
+    gchar       *bin_dir;
+    LPWSTR       w_bin_dir;
+    int          n;
+
+    w_bin_dir = NULL;
+    install_dir = gimp_installation_directory ();
+    bin_dir = g_build_filename (install_dir, "bin", NULL);
+
+    n = MultiByteToWideChar (CP_UTF8, MB_ERR_INVALID_CHARS,
+                             bin_dir, -1, NULL, 0);
+    if (n == 0)
+      goto out;
+
+    w_bin_dir = g_malloc_n (n + 1, sizeof (wchar_t));
+    n = MultiByteToWideChar (CP_UTF8, MB_ERR_INVALID_CHARS,
+                             bin_dir, -1,
+                             w_bin_dir, (n + 1) * sizeof (wchar_t));
+    if (n == 0)
+      goto out;
+
+    SetDllDirectoryW (w_bin_dir);
+
+  out:
+    if (w_bin_dir)
+      g_free (w_bin_dir);
+    g_free (bin_dir);
+  }
+
 #ifndef _WIN64
   {
     typedef BOOL (WINAPI *t_SetProcessDEPPolicy) (DWORD dwFlags);
@@ -764,7 +798,9 @@ gimp_uninstall_temp_proc (const gchar *name)
  * passes them to gimp_run_procedure2(). Please look there for further
  * information.
  *
- * Return value: the procedure's return values.
+ * Return value: the procedure's return values unless there was an error,
+ * in which case the zero-th return value will be the error status, and
+ * the first return value will be a string detailing the error.
  **/
 GimpParam *
 gimp_run_procedure (const gchar *name,
@@ -990,7 +1026,10 @@ gimp_read_expect_msg (GimpWireMessage *msg,
  * As soon as you don't need the return values any longer, you should
  * free them using gimp_destroy_params().
  *
- * Return value: the procedure's return values.
+ * Return value: the procedure's return values unless there was an error,
+ * in which case the zero-th return value will be the error status, and
+ * if there are two values returned, the other return value will be a
+ * string detailing the error.
  **/
 GimpParam *
 gimp_run_procedure2 (const gchar     *name,
@@ -1337,6 +1376,8 @@ gimp_wm_class (void)
  * Returns the display to be used for plug-in windows.
  *
  * This is a constant value given at plug-in configuration time.
+ * Will return #NULL if GIMP has been started with no GUI, either
+ * via "--no-interface" flag, or a console build.
  *
  * Return value: the display name
  **/

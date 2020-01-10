@@ -261,12 +261,17 @@ static const GimpStringActionEntry dialogs_toplevel_actions[] =
     GIMP_HELP_TIPS_DIALOG },
 
   { "dialogs-about", GTK_STOCK_ABOUT,
+#if defined (G_OS_WIN32)
+    NC_("dialogs-action", "About GIMP"), NULL,
+#elif defined (PLATFORM_OSX)
+    NC_("dialogs-action", "About"), NULL,
+#else /* UNIX: use GNOME HIG */
     NC_("dialogs-action", "_About"), NULL,
+#endif
     NC_("dialogs-action", "About GIMP"),
     "gimp-about-dialog",
     GIMP_HELP_ABOUT_DIALOG }
 };
-
 
 static gboolean
 dialogs_actions_toolbox_exists (Gimp *gimp)

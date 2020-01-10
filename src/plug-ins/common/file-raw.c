@@ -205,7 +205,7 @@ query (void)
                           G_N_ELEMENTS (save_args), 0,
                           save_args, NULL);
 
-  gimp_register_save_handler (SAVE_PROC, "", "");
+  gimp_register_save_handler (SAVE_PROC, "data", "");
 }
 
 static void
@@ -221,6 +221,7 @@ run (const gchar      *name,
   GError            *error  = NULL;
   gint32             image_id;
   gint32             drawable_id;
+  GimpExportReturn   export = GIMP_EXPORT_CANCEL;
 
   INIT_I18N ();
 
@@ -300,6 +301,20 @@ run (const gchar      *name,
       image_id    = param[1].data.d_int32;
       drawable_id = param[2].data.d_int32;
 
+      /* export the image */
+      export = gimp_export_image (&image_id, &drawable_id, NULL,
+                                  GIMP_EXPORT_CAN_HANDLE_RGB     |
+                                  GIMP_EXPORT_CAN_HANDLE_GRAY    |
+                                  GIMP_EXPORT_CAN_HANDLE_INDEXED |
+                                  GIMP_EXPORT_CAN_HANDLE_ALPHA);
+
+      if (export == GIMP_EXPORT_CANCEL)
+        {
+          *nreturn_vals = 1;
+          values[0].data.d_status = GIMP_PDB_CANCEL;
+          return;
+        }
+
       if (run_mode == GIMP_RUN_INTERACTIVE)
         {
           gimp_get_data (SAVE_PROC, runtime);
@@ -327,6 +342,9 @@ run (const gchar      *name,
           status = save_image (param[3].data.d_string, image_id, drawable_id,
                                &error);
         }
+
+      if (export == GIMP_EXPORT_EXPORT)
+        gimp_image_delete (image_id);
     }
 
   g_free (runtime);
@@ -555,19 +573,19 @@ save_image (const gchar  *filename,
   GimpPixelRgn      pixel_rgn;
   guchar           *cmap = NULL;  /* colormap for indexed images */
   guchar           *buf;
-  guchar           *red, *green, *blue, *alpha = NULL;
-  gint32            width, height, bpp = 0;
-  gboolean          have_alpha = 0;
+  guchar           *components[4] = { 0, };
+  gint              n_components;
+  gint32            width, height, bpp;
   FILE             *fp;
-  gint              i, j = 0;
+  gint              i, j, c;
   gint              palsize = 0;
   GimpPDBStatusType ret = GIMP_PDB_EXECUTION_ERROR;
 
   /* get info about the current image */
   drawable = gimp_drawable_get (drawable_id);
 
-  bpp        = gimp_drawable_bpp (drawable_id);
-  have_alpha = gimp_drawable_has_alpha (drawable_id);
+  bpp          = gimp_drawable_bpp (drawable_id);
+  n_components = bpp;
 
   if (gimp_drawable_is_indexed (drawable_id))
     cmap = gimp_image_get_colormap (image_id, &palsize);
@@ -648,39 +666,24 @@ save_image (const gchar  *filename,
       break;
 
     case RAW_PLANAR:
-      red   = g_new (guchar, width * height);
-      green = g_new (guchar, width * height);
-      blue  = g_new (guchar, width * height);
-      if (have_alpha)
-        alpha = g_new (guchar, width * height);
+      for (c = 0; c < n_components; c++)
+        components[c] = g_new (guchar, width * height);
 
-      for (i = 0; i < width * height * bpp; i += bpp)
+      for (i = 0, j = 0; i < width * height * bpp; i += bpp, j++)
         {
-          red[j]   = buf[i + 0];
-          green[j] = buf[i + 1];
-          blue[j]  = buf[i + 2];
-          if (have_alpha)
-            alpha[j] = buf[i + 3];
-          j++;
+          for (c = 0; c < n_components; c++)
+            components[c][j] = buf[i + c];
         }
 
       ret = GIMP_PDB_SUCCESS;
-      if (!fwrite (red, width * height, 1, fp))
-        ret = GIMP_PDB_EXECUTION_ERROR;
-      if (!fwrite (green, width * height, 1, fp))
-        ret = GIMP_PDB_EXECUTION_ERROR;
-      if (!fwrite (blue, width * height, 1, fp))
-        ret = GIMP_PDB_EXECUTION_ERROR;
-      if (have_alpha)
+      for (c = 0; c < n_components; c++)
         {
-          if (!fwrite (alpha, width * height, 1, fp))
+          if (! fwrite (components[c], width * height, 1, fp))
             ret = GIMP_PDB_EXECUTION_ERROR;
+
+          g_free (components[c]);
         }
-      g_free (red);
-      g_free (green);
-      g_free (blue);
-      if (have_alpha)
-        g_free (alpha);
+
       fclose (fp);
       break;
 

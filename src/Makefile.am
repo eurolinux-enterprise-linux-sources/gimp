@@ -55,6 +55,7 @@ EXTRA_DIST = \
 	ChangeLog.pre-2-2	\
 	ChangeLog.pre-2-4	\
 	ChangeLog.pre-2-6	\
+	ChangeLog.pre-git	\
 	HACKING			\
 	INSTALL			\
 	LICENSE			\
@@ -69,7 +70,8 @@ EXTRA_DIST = \
 	authors.xml		\
 	authors.xsl		\
 	config.h.win32		\
-	gimp-zip.in
+	gimp-zip.in		\
+	gtk-doc.make
 
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

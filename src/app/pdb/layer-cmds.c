@@ -469,17 +469,14 @@ layer_translate_invoker (GimpProcedure      *procedure,
 
   if (success)
     {
-      GimpImage *image = gimp_item_get_image (GIMP_ITEM (layer));
-
-      gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_ITEM_DISPLACE,
-                                   _("Move Layer"));
-
-      gimp_item_translate (GIMP_ITEM (layer), offx, offy, TRUE);
-
       if (gimp_item_get_linked (GIMP_ITEM (layer)))
-        gimp_item_linked_translate (GIMP_ITEM (layer), offx, offy, TRUE);
-
-      gimp_image_undo_group_end (image);
+        {
+          gimp_item_linked_translate (GIMP_ITEM (layer), offx, offy, TRUE);
+        }
+      else
+        {
+          gimp_item_translate (GIMP_ITEM (layer), offx, offy, TRUE);
+        }
     }
 
   return gimp_procedure_get_return_values (procedure, success,
@@ -505,23 +502,21 @@ layer_set_offsets_invoker (GimpProcedure      *procedure,
 
   if (success)
     {
-      GimpImage *image = gimp_item_get_image (GIMP_ITEM (layer));
-      gint       offset_x;
-      gint       offset_y;
-
-      gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_ITEM_DISPLACE,
-                                   _("Move Layer"));
+      gint offset_x;
+      gint offset_y;
 
       gimp_item_get_offset (GIMP_ITEM (layer), &offset_x, &offset_y);
       offx -= offset_x;
       offy -= offset_y;
 
-      gimp_item_translate (GIMP_ITEM (layer), offx, offy, TRUE);
-
       if (gimp_item_get_linked (GIMP_ITEM (layer)))
-        gimp_item_linked_translate (GIMP_ITEM (layer), offx, offy, TRUE);
-
-      gimp_image_undo_group_end (image);
+        {
+          gimp_item_linked_translate (GIMP_ITEM (layer), offx, offy, TRUE);
+        }
+      else
+        {
+          gimp_item_translate (GIMP_ITEM (layer), offx, offy, TRUE);
+        }
     }
 
   return gimp_procedure_get_return_values (procedure, success,
@@ -1218,7 +1213,7 @@ register_layer_procs (GimpPDB *pdb)
   gimp_procedure_set_static_strings (procedure,
                                      "gimp-layer-group-new",
                                      "Create a new layer group.",
-                                     "This procedure creates a new layer group. Attributes such as layer mode and opacity should be set with explicit procedure calls. Add the new layer group (which is a kind of layer) with the 'gimp-image-insert-layer' command.",
+                                     "This procedure creates a new layer group. Attributes such as layer mode and opacity should be set with explicit procedure calls. Add the new layer group (which is a kind of layer) with the 'gimp-image-insert-layer' command. Other procedures useful with layer groups: 'gimp-image-reorder-item', 'gimp-item-get-parent', 'gimp-item-get-children', 'gimp-item-is-group'.",
                                      "Barak Itkin <lightningismyname@gmail.com>",
                                      "Barak Itkin",
                                      "2010",

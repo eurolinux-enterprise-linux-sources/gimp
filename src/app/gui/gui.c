@@ -77,6 +77,7 @@
 #include "splash.h"
 #include "themes.h"
 #ifdef GDK_WINDOWING_QUARTZ
+#import <AppKit/AppKit.h>
 #include <gtkosxapplication.h>
 #endif /* GDK_WINDOWING_QUARTZ */
 
@@ -197,6 +198,22 @@ gui_init (Gimp     *gimp,
     gui_abort (abort_message);
 
   the_gui_gimp = gimp;
+
+  /* TRANSLATORS: there is no need to translate this in GIMP. This uses
+   * "gtk20" domain as a special trick to determine language direction,
+   * but xgettext extracts it anyway mistakenly into GIMP po files.
+   * Leave an empty string as translation. It does not matter.
+   */
+  if (g_strcmp0 (dgettext ("gtk20", "default:LTR"), "default:RTL") == 0)
+    /* Normally this should have been taken care of during command line
+     * parsing as a post-parse hook of gtk_get_option_group(), using the
+     * system locales.
+     * But user config may have overriden the language, therefore we must
+     * check the widget directions again.
+     */
+    gtk_widget_set_default_direction (GTK_TEXT_DIR_RTL);
+  else
+    gtk_widget_set_default_direction (GTK_TEXT_DIR_LTR);
 
   gui_unique_init (gimp);
 
@@ -481,6 +498,9 @@ gui_restore_after_callback (Gimp               *gimp,
     GtkWidget         *menu;
     GtkWidget         *item;
 
+    [[NSUserDefaults standardUserDefaults] setObject:@"NO"
+                                           forKey:@"NSTreatUnknownArgumentsAsOpen"];
+
     osx_app = gtkosx_application_get ();
 
     menu = gtk_ui_manager_get_widget (GTK_UI_MANAGER (image_ui_manager),
@@ -639,6 +659,14 @@ gui_exit_after_callback (Gimp     *gimp,
   g_object_unref (ui_configurer);
   ui_configurer = NULL;
 
+  /*  exit the clipboard before shutting down the GUI because it runs
+   *  a whole lot of code paths. See bug #731389.
+   */
+  g_signal_handlers_disconnect_by_func (gimp,
+                                        G_CALLBACK (gui_global_buffer_changed),
+                                        NULL);
+  gimp_clipboard_exit (gimp);
+
   session_exit (gimp);
   menus_exit (gimp);
   actions_exit (gimp);
@@ -647,12 +675,6 @@ gui_exit_after_callback (Gimp     *gimp,
   gimp_controllers_exit (gimp);
   gimp_devices_exit (gimp);
   dialogs_exit (gimp);
-
-  g_signal_handlers_disconnect_by_func (gimp,
-                                        G_CALLBACK (gui_global_buffer_changed),
-                                        NULL);
-  gimp_clipboard_exit (gimp);
-
   themes_exit (gimp);
 
   g_type_class_unref (g_type_class_peek (GIMP_TYPE_COLOR_SELECT));

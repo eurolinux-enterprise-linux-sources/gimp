@@ -102,6 +102,8 @@
 
 #include "config.h"
 
+#include <errno.h>
+
 #include <glib/gstdio.h>
 #include <cairo-pdf.h>
 #include <pango/pangocairo.h>
@@ -157,43 +159,51 @@ typedef struct {
 } Page;
 
 
-static gboolean           init_vals                  (const gchar *name,
-                                                      gint nparams,
+static gboolean           init_vals                  (const gchar     *name,
+                                                      gint             nparams,
                                                       const GimpParam *param,
-                                                      gboolean *single,
-                                                      gboolean *defaults,
-                                                      GimpRunMode  *run_mode);
+                                                      gboolean        *single,
+                                                      gboolean        *defaults,
+                                                      GimpRunMode     *run_mode);
 
-static void               init_image_list_defaults   (gint32 image);
+static void               init_image_list_defaults   (gint32           image);
 
 static void               validate_image_list        (void);
 
 static gboolean           gui_single                 (void);
+
 static gboolean           gui_multi                  (void);
 
-static void               choose_file_call           (GtkWidget* browse_button,
-                                                      gpointer file_entry);
+static void               choose_file_call           (GtkWidget       *browse_button,
+                                                      gpointer         file_entry);
 
 static gboolean           get_image_list             (void);
+
 static GtkTreeModel*      create_model               (void);
 
-static void               add_image_call             (GtkWidget *widget,
-                                                      gpointer img_combo);
-static void               del_image_call             (GtkWidget *widget,
-                                                      gpointer icon_view);
-static void               remove_call                (GtkTreeModel *tree_model,
-                                                      GtkTreePath  *path,
-                                                      gpointer      user_data);
+static void               add_image_call             (GtkWidget       *widget,
+                                                      gpointer         img_combo);
+
+static void               del_image_call             (GtkWidget       *widget,
+                                                      gpointer         icon_view);
+
+static void               remove_call                (GtkTreeModel    *tree_model,
+                                                      GtkTreePath     *path,
+                                                      gpointer         user_data);
+
 static void               recount_pages              (void);
 
-static cairo_surface_t   *get_drawable_image         (GimpDrawable *drawable);
-static GimpRGB            get_layer_color            (GimpDrawable *layer,
-                                                      gboolean *single);
-static void               drawText                   (GimpDrawable* text_layer,
-                                                      gdouble opacity,
-                                                      cairo_t *cr,
-                                                      gdouble x_res,
-                                                      gdouble y_res);
+static cairo_surface_t   *get_drawable_image         (GimpDrawable    *drawable,
+                                                      GError         **error);
+
+static GimpRGB            get_layer_color            (GimpDrawable    *layer,
+                                                      gboolean        *single);
+
+static void               drawText                   (GimpDrawable    *text_layer,
+                                                      gdouble          opacity,
+                                                      cairo_t         *cr,
+                                                      gdouble          x_res,
+                                                      gdouble          y_res);
 
 static void query (void);
 static void run   (const gchar      *name,
@@ -331,7 +341,7 @@ run (const gchar      *name,
      gint             *nreturn_vals,
      GimpParam       **return_vals)
 {
-  static GimpParam        values[1];
+  static GimpParam        values[2];
   GimpPDBStatusType       status = GIMP_PDB_SUCCESS;
   GimpRunMode             run_mode;
 
@@ -369,6 +379,7 @@ run (const gchar      *name,
   GimpDrawable           *mask = NULL;
   cairo_surface_t        *mask_image = NULL;
   FILE                   *fp;
+  GError                 *error = NULL;
 
   INIT_I18N ();
 
@@ -376,7 +387,7 @@ run (const gchar      *name,
   *nreturn_vals = 1;
   *return_vals  = values;
 
-  values[0].type = GIMP_PDB_STATUS;
+  values[0].type          = GIMP_PDB_STATUS;
   values[0].data.d_status = status;
 
   /* Initializing all the settings */
@@ -415,6 +426,22 @@ run (const gchar      *name,
     }
 
   fp = g_fopen (file_name, "wb");
+  if (fp == NULL)
+    {
+      *nreturn_vals = 2;
+
+      values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
+      values[1].type          = GIMP_PDB_STRING;
+      if (error == NULL)
+        {
+          g_set_error (&error, G_FILE_ERROR, g_file_error_from_errno (errno),
+                       _("Could not open '%s' for writing: %s"),
+                       gimp_filename_to_utf8 (file_name), g_strerror (errno));
+        }
+      values[1].data.d_string = error->message;
+      return;
+    }
+
   pdf_file = cairo_pdf_surface_create_for_stream (write_func, fp, 1, 1);
   if (cairo_surface_status (pdf_file) != CAIRO_STATUS_SUCCESS)
     {
@@ -495,7 +522,22 @@ run (const gchar      *name,
               if (mask_id != -1)
                 {
                   mask = gimp_drawable_get (mask_id);
-                  mask_image = get_drawable_image (mask);
+                  mask_image = get_drawable_image (mask, &error);
+                  if (error != NULL)
+                    {
+                      *nreturn_vals = 2;
+
+                      /* free the resources */
+                      cairo_surface_destroy (pdf_file);
+                      cairo_destroy (cr);
+                      fclose (fp);
+
+                      values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
+
+                      values[1].type          = GIMP_PDB_STRING;
+                      values[1].data.d_string = error->message;
+                      return;
+                    }
                 }
 
               gimp_drawable_offsets (layer->drawable_id, &x, &y);
@@ -517,7 +559,22 @@ run (const gchar      *name,
                   else
                     {
                       cairo_clip (cr);
-                      layer_image = get_drawable_image (layer);
+                      layer_image = get_drawable_image (layer, &error);
+                      if (error != NULL)
+                        {
+                          *nreturn_vals = 2;
+
+                          /* free the resources */
+                          cairo_surface_destroy (pdf_file);
+                          cairo_destroy (cr);
+                          fclose (fp);
+
+                          values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
+
+                          values[1].type          = GIMP_PDB_STRING;
+                          values[1].data.d_string = error->message;
+                          return;
+                        }
                       cairo_set_source_surface (cr, layer_image, x, y);
                       cairo_push_group (cr);
                       cairo_paint_with_alpha (cr, opacity);
@@ -616,7 +673,7 @@ init_vals (const gchar      *name,
 
       *run_mode = param[SMA_RUN_MODE].data.d_int32;
       image = -1;
-      file_name = param[SA_FILENAME].data.d_string;
+      file_name = param[SMA_FILENAME].data.d_string;
 
       optimize.apply_masks = param[SMA_APPLY_MASKS].data.d_int32;
       optimize.vectorize = param[SMA_VECTORIZE].data.d_int32;
@@ -1224,12 +1281,14 @@ convert_from_indexeda_to_rgba (const guchar *src,
 }
 
 static cairo_surface_t *
-get_drawable_image (GimpDrawable *drawable)
+get_drawable_image (GimpDrawable  *drawable,
+                    GError       **error)
 {
   gint32           drawable_ID   = drawable->drawable_id;
   GimpPixelRgn     region;
   GimpImageType    image_type    = gimp_drawable_type (drawable_ID);
   cairo_surface_t *surface;
+  cairo_status_t   status;
   cairo_format_t   format;
   const gint       width         = drawable->width;
   const gint       height        = drawable->height;
@@ -1279,6 +1338,29 @@ get_drawable_image (GimpDrawable *drawable)
     }
 
   surface = cairo_image_surface_create (format, width, height);
+
+  status = cairo_surface_status (surface);
+  if (status != CAIRO_STATUS_SUCCESS)
+    {
+      switch (status)
+        {
+        case CAIRO_STATUS_INVALID_SIZE:
+          g_set_error_literal (error,
+                               1,
+                               0,
+                               _("Cannot handle the size (either width or height) of the image."));
+          break;
+        default:
+          g_set_error (error,
+                       1,
+                       0,
+                       "Cairo error: %s",
+                       cairo_status_to_string (status));
+          break;
+        }
+
+      return NULL;
+    }
 
   pixels = cairo_image_surface_get_data (surface);
   stride = cairo_image_surface_get_stride (surface);
@@ -1440,6 +1522,7 @@ drawText (GimpDrawable *text_layer,
   gdouble               letter_spacing;
   PangoAttribute       *letter_spacing_at;
   PangoAttrList        *attr_list = pango_attr_list_new ();
+  PangoFontMap         *fontmap;
 
   cairo_save (cr);
 
@@ -1490,8 +1573,13 @@ drawText (GimpDrawable *text_layer,
 
   /* We are done with cairo's settings.
    * It's time to create the context */
-  cairo_set_font_options (cr, options);
-  context = pango_cairo_create_context (cr);
+  fontmap = pango_cairo_font_map_new_for_font_type (CAIRO_FONT_TYPE_FT);
+
+  pango_cairo_font_map_set_resolution (PANGO_CAIRO_FONT_MAP (fontmap), y_res);
+
+  context = pango_font_map_create_context (fontmap);
+  g_object_unref (fontmap);
+
   pango_cairo_context_set_font_options (context, options);
 
   /* Text Direction */
@@ -1507,6 +1595,7 @@ drawText (GimpDrawable *text_layer,
   /* We are done with the context's settings.
    * It's time to create the layout */
   layout = pango_layout_new (context);
+  pango_layout_set_wrap (layout, PANGO_WRAP_WORD_CHAR);
 
   /* Font */
   font_family = gimp_text_layer_get_font (text_id);
@@ -1521,9 +1610,8 @@ drawText (GimpDrawable *text_layer,
 
   pango_layout_set_font_description (layout, font_description);
 
-  /* Width and height */
+  /* Width */
   pango_layout_set_width (layout, text_layer->width * PANGO_SCALE);
-  pango_layout_set_height (layout, text_layer->height * PANGO_SCALE);
 
   /* Justification, and Alignment */
   justify = FALSE;
