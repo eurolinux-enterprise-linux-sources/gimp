@@ -359,12 +359,10 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image_ID, &drawable_ID, "XWD",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB  |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED);
-
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -424,9 +422,9 @@ static gint32
 load_image (const gchar  *filename,
             GError      **error)
 {
-  FILE            *ifp = NULL;
+  FILE            *ifp;
   gint             depth, bpp;
-  gint32           image_ID = -1;
+  gint32           image_ID;
   L_XWDFILEHEADER  xwdhdr;
   L_XWDCOLOR      *xwdcolmap = NULL;
 
@@ -436,7 +434,7 @@ load_image (const gchar  *filename,
       g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno),
                    _("Could not open '%s' for reading: %s"),
                    gimp_filename_to_utf8 (filename), g_strerror (errno));
-      goto out;
+      return -1;
     }
 
   read_xwd_header (ifp, &xwdhdr);
@@ -445,7 +443,8 @@ load_image (const gchar  *filename,
       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
                    _("Could not read XWD header from '%s'"),
                    gimp_filename_to_utf8 (filename));
-      goto out;
+      fclose (ifp);
+      return -1;
     }
 
 #ifdef XWD_COL_WAIT_DEBUG
@@ -460,25 +459,8 @@ load_image (const gchar  *filename,
   /* Position to start of XWDColor structures */
   fseek (ifp, (long)xwdhdr.l_header_size, SEEK_SET);
 
-  /* Guard against insanely huge color maps -- gimp_image_set_colormap() only
-   * accepts colormaps with 0..256 colors anyway. */
-  if (xwdhdr.l_colormap_entries > 256)
-    {
-      g_message (_("'%s':\nIllegal number of colormap entries: %ld"),
-                 gimp_filename_to_utf8 (filename),
-                 (long)xwdhdr.l_colormap_entries);
-      goto out;
-    }
-
   if (xwdhdr.l_colormap_entries > 0)
     {
-      if (xwdhdr.l_colormap_entries < xwdhdr.l_ncolors)
-        {
-          g_message (_("'%s':\nNumber of colormap entries < number of colors"),
-                     gimp_filename_to_utf8 (filename));
-          goto out;
-        }
-
       xwdcolmap = g_new (L_XWDCOLOR, xwdhdr.l_colormap_entries);
 
       read_xwd_cols (ifp, &xwdhdr, xwdcolmap);
@@ -498,7 +480,9 @@ load_image (const gchar  *filename,
       if (xwdhdr.l_file_version != 7)
         {
           g_message (_("Can't read color entries"));
-          goto out;
+          g_free (xwdcolmap);
+          fclose (ifp);
+          return (-1);
         }
     }
 
@@ -506,7 +490,9 @@ load_image (const gchar  *filename,
     {
       g_message (_("'%s':\nNo image width specified"),
                  gimp_filename_to_utf8 (filename));
-      goto out;
+      g_free (xwdcolmap);
+      fclose (ifp);
+      return (-1);
     }
 
   if (xwdhdr.l_pixmap_width > GIMP_MAX_IMAGE_SIZE
@@ -514,21 +500,27 @@ load_image (const gchar  *filename,
     {
       g_message (_("'%s':\nImage width is larger than GIMP can handle"),
                  gimp_filename_to_utf8 (filename));
-      goto out;
+      g_free (xwdcolmap);
+      fclose (ifp);
+      return (-1);
     }
 
   if (xwdhdr.l_pixmap_height <= 0)
     {
       g_message (_("'%s':\nNo image height specified"),
                  gimp_filename_to_utf8 (filename));
-      goto out;
+      g_free (xwdcolmap);
+      fclose (ifp);
+      return (-1);
     }
 
   if (xwdhdr.l_pixmap_height > GIMP_MAX_IMAGE_SIZE)
     {
       g_message (_("'%s':\nImage height is larger than GIMP can handle"),
                  gimp_filename_to_utf8 (filename));
-      goto out;
+      g_free (xwdcolmap);
+      fclose (ifp);
+      return (-1);
     }
 
   gimp_progress_init_printf (_("Opening '%s'"),
@@ -577,23 +569,17 @@ load_image (const gchar  *filename,
     }
   gimp_progress_update (1.0);
 
+  fclose (ifp);
+
+  if (xwdcolmap)
+    g_free (xwdcolmap);
+
   if (image_ID == -1 && ! (error && *error))
     g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
                  _("XWD-file %s has format %d, depth %d and bits per pixel %d. "
                    "Currently this is not supported."),
                  gimp_filename_to_utf8 (filename),
                  (gint) xwdhdr.l_pixmap_format, depth, bpp);
-
-out:
-  if (ifp)
-    {
-      fclose (ifp);
-    }
-
-  if (xwdcolmap)
-    {
-      g_free (xwdcolmap);
-    }
 
   return image_ID;
 }

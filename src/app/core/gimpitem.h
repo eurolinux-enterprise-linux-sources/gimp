@@ -240,7 +240,7 @@ gboolean        gimp_item_stroke             (GimpItem           *item,
                                               GimpDrawable       *drawable,
                                               GimpContext        *context,
                                               GimpStrokeOptions  *stroke_options,
-                                              GimpPaintOptions   *paint_options,
+                                              gboolean            use_default_values,
                                               gboolean            push_undo,
                                               GimpProgress       *progress,
                                               GError            **error);

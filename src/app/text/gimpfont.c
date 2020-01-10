@@ -27,9 +27,7 @@
 
 #define PANGO_ENABLE_ENGINE  1   /* Argh */
 #include <pango/pango-ot.h>
-
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
+#include <freetype/tttables.h>
 
 #include "text-types.h"
 

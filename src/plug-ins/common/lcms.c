@@ -363,12 +363,10 @@ run (const gchar      *name,
     goto done;
 
   if (proc != PROC_FILE_INFO)
-    {
-      config = gimp_get_color_configuration ();
-      /* Later code relies on config != NULL if proc != PROC_FILE_INFO */
-      g_return_if_fail (config != NULL);
-      intent = config->display_intent;
-    }
+    config = gimp_get_color_configuration ();
+
+  if (config)
+    intent = config->display_intent;
   else
     intent = GIMP_COLOR_RENDERING_INTENT_PERCEPTUAL;
 
@@ -1052,22 +1050,18 @@ lcms_layers_transform_rgb (gint                     *layers,
     {
       GimpDrawable    *drawable = gimp_drawable_get (layers[i]);
       cmsUInt32Number  format;
+      gint            *children;
+      gint             num_children;
 
-      if (gimp_item_is_group (layers[i]))
+      children = gimp_item_get_children (layers[i], &num_children);
+
+      if (children)
         {
-          gint *children;
-          gint  num_children;
+          lcms_layers_transform_rgb (children, num_children,
+                                     src_profile, dest_profile,
+                                     intent, bpc);
 
-          children = gimp_item_get_children (layers[i], &num_children);
-
-          if (children)
-            {
-              lcms_layers_transform_rgb (children, num_children,
-                                         src_profile, dest_profile,
-                                         intent, bpc);
-
-              g_free (children);
-            }
+          g_free (children);
 
           continue;
         }
@@ -1392,10 +1386,7 @@ lcms_icc_apply_dialog (gint32       image,
 
   run = (gimp_dialog_run (GIMP_DIALOG (dialog)) == GTK_RESPONSE_OK);
 
-  if (dont_ask)
-    {
-      *dont_ask = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (toggle));
-    }
+  *dont_ask = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (toggle));
 
   gtk_widget_destroy (dialog);
 
@@ -1502,7 +1493,7 @@ lcms_icc_combo_box_new (GimpColorConfig *config,
   gchar       *history;
   gchar       *label;
   gchar       *name;
-  cmsHPROFILE  profile = NULL;
+  cmsHPROFILE  profile;
 
   dialog = lcms_icc_file_chooser_dialog_new ();
   history = gimp_personal_rc_file ("profilerc");
@@ -1517,8 +1508,7 @@ lcms_icc_combo_box_new (GimpColorConfig *config,
 
   if (config->rgb_profile)
     profile = lcms_load_profile (config->rgb_profile, NULL);
-
-  if (! profile)
+  else
     profile = cmsCreate_sRGBProfile ();
 
   name = lcms_icc_profile_get_desc (profile);

@@ -51,11 +51,6 @@ libgimpmodule = $(top_builddir)/libgimpmodule/libgimpmodule-$(GIMP_API_VERSION).
 libgimpwidgets = $(top_builddir)/libgimpwidgets/libgimpwidgets-$(GIMP_API_VERSION).la
 libgimpthumb = $(top_builddir)/libgimpthumb/libgimpthumb-$(GIMP_API_VERSION).la
 
-if OS_WIN32
-else
-libm = -lm
-endif
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir)		\
 	-I$(top_srcdir)/app	\
@@ -132,8 +127,7 @@ LDADD = \
 	$(GEGL_LIBS)						\
 	$(GLIB_LIBS)						\
 	$(INTLLIBS)						\
-	$(RT_LIBS)							\
-	$(libm)
+	$(RT_LIBS)
 
 gimpdir-output:
 	mkdir -p gimpdir-output

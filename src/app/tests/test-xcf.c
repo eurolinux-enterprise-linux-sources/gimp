@@ -271,13 +271,6 @@ gimp_test_load_image (Gimp        *gimp,
 
 /**
  * gimp_write_and_read_file:
- * @gimp:                  #Gimp instance
- * @with_unusual_stuff:    toggles whether to create the image with unusual
- *                         stuff, currently only a floating selection
- * @compat_paths:          toggles whether to use old style paths
- *                         (before GIMP 1.3)
- * @use_gimp_2_8_features: toggles whether to use GIMP 2.8 feature,
- *                         currently layer groups
  *
  * Constructs the main test image and asserts its state, writes it to
  * a file, reads the image from the file, and asserts the state of the
@@ -341,14 +334,6 @@ gimp_write_and_read_file (Gimp     *gimp,
 
 /**
  * gimp_create_mainimage:
- * gimp_write_and_read_file:
- * @gimp:                  #Gimp instance
- * @with_unusual_stuff:    toggles whether to create the image with unusual
- *                         stuff, currently only a floating selection
- * @compat_paths:          toggles whether to use old style paths
- *                         (before GIMP 1.3)
- * @use_gimp_2_8_features: toggles whether to use GIMP 2.8 feature,
- *                         currently layer groups
  *
  * Creates the main test image, i.e. the image that we use for most of
  * our XCF testing purposes.
@@ -446,7 +431,7 @@ gimp_create_mainimage (Gimp     *gimp,
                                       GIMP_MAINIMAGE_SAMPLEPOINT2_Y,
                                       FALSE /*push_undo*/);
 
-  /* Tattoo
+  /* Tatto
    * We don't bother testing this, not yet at least
    */
 

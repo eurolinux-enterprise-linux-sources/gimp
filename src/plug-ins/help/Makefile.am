@@ -7,11 +7,6 @@ libgimpcolor = $(top_builddir)/libgimpcolor/libgimpcolor-$(GIMP_API_VERSION).la
 libgimpbase = $(top_builddir)/libgimpbase/libgimpbase-$(GIMP_API_VERSION).la
 libgimpmath = $(top_builddir)/libgimpmath/libgimpmath-$(GIMP_API_VERSION).la
 
-if PLATFORM_OSX
-xobjective_c = "-xobjective-c"
-framework_cocoa = -framework Foundation
-endif
-
 if OS_WIN32
 mwindows = -mwindows
 endif
@@ -23,8 +18,7 @@ endif
 
 AM_CPPFLAGS = -DDATADIR=\""$(gimpdatadir)"\"
 
-AM_LDFLAGS = $(mwindows) \
-	$(framework_cocoa)
+AM_LDFLAGS = $(mwindows)
 
 noinst_LIBRARIES = libgimphelp.a
 
@@ -53,8 +47,7 @@ INCLUDES = \
 	$(CAIRO_CFLAGS)		\
 	$(GIO_CFLAGS)		\
 	$(GDK_PIXBUF_CFLAGS)	\
-	-I$(includedir) \
-	$(xobjective_c)
+	-I$(includedir)
 
 LDADD = \
 	$(libgimphelp)		\

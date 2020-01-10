@@ -236,7 +236,7 @@ gimp_layer_new_from_surface (gint32                image_ID,
   cairo_format_t   format;
   gint             width;
   gint             height;
-  gsize            rowstride;
+  gint             rowstride;
   gdouble          range = progress_end - progress_start;
   guint            count = 0;
   guint            done  = 0;

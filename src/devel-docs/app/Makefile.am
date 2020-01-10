@@ -61,11 +61,6 @@ GTKDOC_CFLAGS = \
 	-I$(includedir)	\
 	-UGTK_DISABLE_SINGLE_INCLUDES
 
-if OS_WIN32
-else
-libm = -lm
-endif
-
 GTKDOC_LIBS = \
 	-u $(SYMPREFIX)xcf_init		   				     \
 	-u $(SYMPREFIX)internal_procs_init 				     \
@@ -115,8 +110,7 @@ GTKDOC_LIBS = \
 	$(DBUS_GLIB_LIBS)						     \
 	$(GEGL_LIBS)							     \
 	$(RT_LIBS)							     \
-        $(INTLLIBS)							     \
-	$(libm)
+        $(INTLLIBS)
 
 
 if ENABLE_GTK_DOC_APP

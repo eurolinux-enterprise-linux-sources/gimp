@@ -343,23 +343,6 @@ gimp_brush_load_brush (GimpContext  *context,
       }
       break;
 
-    case 3:
-      /* The obsolete .gbp format had a 3-byte pattern following a
-       * 1-byte brush, when embedded in a brush pipe, the current code
-       * tries to load that pattern as a brush, and encounters the '3'
-       * in the header.
-       */
-      g_object_unref (brush);
-      g_set_error (error, GIMP_DATA_ERROR, GIMP_DATA_ERROR_READ,
-                   _("Fatal parse error in brush file '%s': "
-                     "Unsupported brush depth %d\n"
-                     "GIMP brushes must be GRAY or RGBA.\n"
-                     "This might be an obsolete GIMP brush file, try "
-                     "loading it as image and save it again."),
-                   gimp_filename_to_utf8 (filename), header.bytes);
-      return NULL;
-      break;
-
     case 4:
       {
         guchar buf[8 * 1024];
@@ -620,15 +603,6 @@ gimp_brush_load_abr_brush_v12 (FILE         *file,
 
         abr_sampled_brush_hdr.depth = abr_read_short (file);
 
-        if (feof (file))
-          {
-            g_set_error (error, GIMP_DATA_ERROR, GIMP_DATA_ERROR_READ,
-                         _("Fatal parse error in brush file '%s': "
-                           "File appears truncated."),
-                         gimp_filename_to_utf8 (filename));
-            return NULL;
-          }
-
         height = (abr_sampled_brush_hdr.bounds_long[2] -
                   abr_sampled_brush_hdr.bounds_long[0]); /* bottom - top */
         width  = (abr_sampled_brush_hdr.bounds_long[3] -
@@ -693,16 +667,6 @@ gimp_brush_load_abr_brush_v12 (FILE         *file,
           fread (mask, size, 1, file);
         else
           abr_rle_decode (file, (gchar *) mask, height);
-
-        if (feof (file))
-          {
-            g_set_error (error, GIMP_DATA_ERROR, GIMP_DATA_ERROR_READ,
-                         _("Fatal parse error in brush file '%s': "
-                           "File appears truncated."),
-                         gimp_filename_to_utf8 (filename));
-            g_object_unref (brush);
-            return NULL;
-          }
       }
       break;
 
@@ -773,15 +737,6 @@ gimp_brush_load_abr_brush_v6 (FILE         *file,
   depth    = abr_read_short (file);
   compress = abr_read_char (file);
 
-  if (feof (file))
-    {
-      g_set_error (error, GIMP_DATA_ERROR, GIMP_DATA_ERROR_READ,
-                   _("Fatal parse error in brush file '%s': "
-                     "File appears truncated."),
-                   gimp_filename_to_utf8 (filename));
-      return NULL;
-    }
-
   width  = right - left;
   height = bottom - top;
   size   = width * (depth >> 3) * height;
@@ -815,16 +770,6 @@ gimp_brush_load_abr_brush_v6 (FILE         *file,
     abr_rle_decode (file, (gchar *) mask, height);
 
   fseek (file, next_brush, SEEK_SET);
-
-  if (feof (file))
-    {
-      g_set_error (error, GIMP_DATA_ERROR, GIMP_DATA_ERROR_READ,
-                   _("Fatal parse error in brush file '%s': "
-                     "File appears truncated."),
-                   gimp_filename_to_utf8 (filename));
-      g_object_unref (brush);
-      return NULL;
-    }
 
   return brush;
 }

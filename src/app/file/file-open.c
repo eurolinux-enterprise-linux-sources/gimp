@@ -115,6 +115,13 @@ file_open_image (Gimp                *gimp,
 
   *status = GIMP_PDB_EXECUTION_ERROR;
 
+  if (! file_proc)
+    file_proc = file_procedure_find (gimp->plug_in_manager->load_procs, uri,
+                                     error);
+
+  if (! file_proc)
+    return NULL;
+
   filename = file_utils_filename_from_uri (uri);
 
   if (filename)
@@ -144,19 +151,6 @@ file_open_image (Gimp                *gimp,
       filename = g_strdup (uri);
     }
 
-  if (! file_proc)
-    file_proc = file_procedure_find (gimp->plug_in_manager->load_procs, uri,
-                                     error);
-
-  if (! file_proc)
-    {
-      g_free (filename);
-      return NULL;
-    }
-
-  if (progress)
-    g_object_add_weak_pointer (G_OBJECT (progress), (gpointer) &progress);
-
   return_vals =
     gimp_pdb_execute_procedure_by_name (gimp->pdb,
                                         context, progress, error,
@@ -165,9 +159,6 @@ file_open_image (Gimp                *gimp,
                                         G_TYPE_STRING,   filename,
                                         G_TYPE_STRING,   entered_filename,
                                         G_TYPE_NONE);
-
-  if (progress)
-    g_object_remove_weak_pointer (G_OBJECT (progress), (gpointer) &progress);
 
   g_free (filename);
 
@@ -570,10 +561,6 @@ file_open_from_command_line (Gimp        *gimp,
       GimpImage         *image;
       GimpObject        *display = gimp_get_empty_display (gimp);
       GimpPDBStatusType  status;
-
-      /* show the progress in the last opened display, see bug #704896 */
-      if (! display)
-        display = gimp_context_get_display (gimp_get_user_context (gimp));
 
       if (display)
         g_object_add_weak_pointer (G_OBJECT (display), (gpointer) &display);

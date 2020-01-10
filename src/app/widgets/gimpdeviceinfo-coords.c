@@ -62,13 +62,11 @@ gimp_device_info_get_event_coords (GimpDeviceInfo *info,
               gint offset_x;
               gint offset_y;
 
-              if (gtk_widget_translate_coordinates (src_widget, dest_widget,
-                                                    0, 0,
-                                                    &offset_x, &offset_y))
-                {
-                  coords->x += offset_x;
-                  coords->y += offset_y;
-                }
+              gtk_widget_translate_coordinates (src_widget, dest_widget,
+                                                0, 0, &offset_x, &offset_y);
+
+              coords->x += offset_x;
+              coords->y += offset_y;
             }
         }
 

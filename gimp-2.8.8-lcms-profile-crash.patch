@@ -1,0 +1,48 @@
+From 9962e79ff981778416081c5832c63ab6c78e9e6a Mon Sep 17 00:00:00 2001
+From: Nils Philippsen <nils@redhat.com>
+Date: Thu, 7 Nov 2013 13:08:02 +0100
+Subject: [PATCH] patch: lcms-profile-crash
+
+Squashed commit of the following:
+
+commit c733e96b9230ef22c41779171890af885d196b95
+Author: Michael Natterer <mitch@gimp.org>
+Date:   Mon Nov 4 23:17:41 2013 +0100
+
+    Bug 709857 - Lcms plugin crashes if RGB profile does not exist
+
+    Always check the return value of lcms_load_profile(config->rgb_profile)
+    and use the builtin sRGB profile if it returns NULL.
+
+    (cherry picked from commit 961d03d795e1ab32923f31e7f979f601403cdf41)
+    (cherry picked from commit dc6ccc17495bcabbd96d4c18616cb4b57bd07ea6)
+---
+ plug-ins/common/lcms.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/plug-ins/common/lcms.c b/plug-ins/common/lcms.c
+index 3fa26db..87373fc 100644
+--- a/plug-ins/common/lcms.c
++++ b/plug-ins/common/lcms.c
+@@ -1493,7 +1493,7 @@ lcms_icc_combo_box_new (GimpColorConfig *config,
+   gchar       *history;
+   gchar       *label;
+   gchar       *name;
+-  cmsHPROFILE  profile;
++  cmsHPROFILE  profile = NULL;
+ 
+   dialog = lcms_icc_file_chooser_dialog_new ();
+   history = gimp_personal_rc_file ("profilerc");
+@@ -1508,7 +1508,8 @@ lcms_icc_combo_box_new (GimpColorConfig *config,
+ 
+   if (config->rgb_profile)
+     profile = lcms_load_profile (config->rgb_profile, NULL);
+-  else
++
++  if (! profile)
+     profile = cmsCreate_sRGBProfile ();
+ 
+   name = lcms_icc_profile_get_desc (profile);
+-- 
+1.8.4.2
+

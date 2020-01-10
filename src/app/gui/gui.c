@@ -76,21 +76,8 @@
 #include "session.h"
 #include "splash.h"
 #include "themes.h"
-
 #ifdef GDK_WINDOWING_QUARTZ
-#import <AppKit/AppKit.h>
-#include <gtkosxapplication.h>
-
-/* Forward declare since we are building against old SDKs. */
-#if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
-
-@interface NSWindow(ForwardDeclarations)
-+ (void)setAllowsAutomaticWindowTabbing:(BOOL)allow;
-@end
-
-#endif
-
+#include "ige-mac-menu.h"
 #endif /* GDK_WINDOWING_QUARTZ */
 
 #include "gimp-intl.h"
@@ -211,22 +198,6 @@ gui_init (Gimp     *gimp,
 
   the_gui_gimp = gimp;
 
-  /* TRANSLATORS: there is no need to translate this in GIMP. This uses
-   * "gtk20" domain as a special trick to determine language direction,
-   * but xgettext extracts it anyway mistakenly into GIMP po files.
-   * Leave an empty string as translation. It does not matter.
-   */
-  if (g_strcmp0 (dgettext ("gtk20", "default:LTR"), "default:RTL") == 0)
-    /* Normally this should have been taken care of during command line
-     * parsing as a post-parse hook of gtk_get_option_group(), using the
-     * system locales.
-     * But user config may have overriden the language, therefore we must
-     * check the widget directions again.
-     */
-    gtk_widget_set_default_direction (GTK_TEXT_DIR_RTL);
-  else
-    gtk_widget_set_default_direction (GTK_TEXT_DIR_LTR);
-
   gui_unique_init (gimp);
 
   gimp_widgets_init (gui_help_func,
@@ -238,17 +209,6 @@ gui_init (Gimp     *gimp,
 
   /*  disable automatic startup notification  */
   gtk_window_set_auto_startup_notification (FALSE);
-
-#ifdef GDK_WINDOWING_QUARTZ
-  /* Before the first window is created (typically the splash window),
-   * we need to disable automatic tabbing behavior introduced on Sierra.
-   * This is known to cause all kinds of weird issues (see for instance
-   * Bugzilla #776294) and needs proper GTK+ support if we would want to
-   * enable it.
-   */
-  if ([NSWindow respondsToSelector:@selector(setAllowsAutomaticWindowTabbing:)])
-    [NSWindow setAllowsAutomaticWindowTabbing:NO];
-#endif /* GDK_WINDOWING_QUARTZ */
 
   gimp_dnd_init (gimp);
 
@@ -467,26 +427,17 @@ gui_restore_callback (Gimp               *gimp,
 
 #ifdef GDK_WINDOWING_QUARTZ
 static void
-gui_add_to_app_menu (GimpUIManager     *ui_manager,
-                     GtkosxApplication *osx_app,
-                     const gchar       *action_path,
-                     gint               index)
+gui_add_to_app_menu (GimpUIManager   *ui_manager,
+                     IgeMacMenuGroup *group,
+                     const gchar     *action_path,
+                     const gchar     *label)
 {
   GtkWidget *item;
 
   item = gtk_ui_manager_get_widget (GTK_UI_MANAGER (ui_manager), action_path);
 
   if (GTK_IS_MENU_ITEM (item))
-    gtkosx_application_insert_app_menu_item (osx_app, GTK_WIDGET (item), index);
-}
-
-static gboolean
-gui_quartz_quit_callback (GtkosxApplication *osx_app,
-                          GimpUIManager     *ui_manager)
-{
-  gimp_ui_manager_activate_action (ui_manager, "file", "file-quit");
-
-  return TRUE;
+    ige_mac_menu_add_app_menu_item (group, GTK_MENU_ITEM (item), label);
 }
 #endif
 
@@ -517,53 +468,47 @@ gui_restore_after_callback (Gimp               *gimp,
 
 #ifdef GDK_WINDOWING_QUARTZ
   {
-    GtkosxApplication *osx_app;
-    GtkWidget         *menu;
-    GtkWidget         *item;
-
-    [[NSUserDefaults standardUserDefaults] setObject:@"NO"
-                                           forKey:@"NSTreatUnknownArgumentsAsOpen"];
-
-    osx_app = gtkosx_application_get ();
+    IgeMacMenuGroup *group;
+    GtkWidget       *menu;
+    GtkWidget       *item;
 
     menu = gtk_ui_manager_get_widget (GTK_UI_MANAGER (image_ui_manager),
-                                      "/image-menubar");
+				      "/dummy-menubar/image-popup");
+
     if (GTK_IS_MENU_ITEM (menu))
       menu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (menu));
 
-    gtkosx_application_set_menu_bar (osx_app, GTK_MENU_SHELL (menu));
-    gtkosx_application_set_use_quartz_accelerators (osx_app, FALSE);
-
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         "/image-menubar/Help/dialogs-about", 0);
-
-#define PREFERENCES "/image-menubar/Edit/Preferences/"
-
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         PREFERENCES "dialogs-preferences", 2);
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         PREFERENCES "dialogs-input-devices", 3);
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         PREFERENCES "dialogs-keyboard-shortcuts", 4);
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         PREFERENCES "dialogs-module-dialog", 5);
-    gui_add_to_app_menu (image_ui_manager, osx_app,
-                         PREFERENCES "plug-in-unit-editor", 6);
-
-#undef PREFERENCES
-
-    item = gtk_separator_menu_item_new ();
-    gtkosx_application_insert_app_menu_item (osx_app, item, 7);
+    ige_mac_menu_set_menu_bar (GTK_MENU_SHELL (menu));
 
     item = gtk_ui_manager_get_widget (GTK_UI_MANAGER (image_ui_manager),
-                                      "/image-menubar/File/file-quit");
-    gtk_widget_hide (item);
+                                      "/dummy-menubar/image-popup/File/file-quit");
+    if (GTK_IS_MENU_ITEM (item))
+      ige_mac_menu_set_quit_menu_item (GTK_MENU_ITEM (item));
 
-    g_signal_connect (osx_app, "NSApplicationBlockTermination",
-                      G_CALLBACK (gui_quartz_quit_callback),
-                      image_ui_manager);
+    /*  the about group  */
+    group = ige_mac_menu_add_app_menu_group ();
 
-    gtkosx_application_ready (osx_app);
+    gui_add_to_app_menu (image_ui_manager, group,
+                         "/dummy-menubar/image-popup/Help/dialogs-about",
+                         _("About GIMP"));
+
+    /*  the preferences group  */
+    group = ige_mac_menu_add_app_menu_group ();
+
+#define PREFERENCES "/dummy-menubar/image-popup/Edit/Preferences/"
+
+    gui_add_to_app_menu (image_ui_manager, group,
+                         PREFERENCES "dialogs-preferences", NULL);
+    gui_add_to_app_menu (image_ui_manager, group,
+                         PREFERENCES "dialogs-input-devices", NULL);
+    gui_add_to_app_menu (image_ui_manager, group,
+                         PREFERENCES "dialogs-keyboard-shortcuts", NULL);
+    gui_add_to_app_menu (image_ui_manager, group,
+                         PREFERENCES "dialogs-module-dialog", NULL);
+    gui_add_to_app_menu (image_ui_manager, group,
+                         PREFERENCES "plug-in-unit-editor", NULL);
+
+#undef PREFERENCES
   }
 #endif /* GDK_WINDOWING_QUARTZ */
 
@@ -682,14 +627,6 @@ gui_exit_after_callback (Gimp     *gimp,
   g_object_unref (ui_configurer);
   ui_configurer = NULL;
 
-  /*  exit the clipboard before shutting down the GUI because it runs
-   *  a whole lot of code paths. See bug #731389.
-   */
-  g_signal_handlers_disconnect_by_func (gimp,
-                                        G_CALLBACK (gui_global_buffer_changed),
-                                        NULL);
-  gimp_clipboard_exit (gimp);
-
   session_exit (gimp);
   menus_exit (gimp);
   actions_exit (gimp);
@@ -698,6 +635,12 @@ gui_exit_after_callback (Gimp     *gimp,
   gimp_controllers_exit (gimp);
   gimp_devices_exit (gimp);
   dialogs_exit (gimp);
+
+  g_signal_handlers_disconnect_by_func (gimp,
+                                        G_CALLBACK (gui_global_buffer_changed),
+                                        NULL);
+  gimp_clipboard_exit (gimp);
+
   themes_exit (gimp);
 
   g_type_class_unref (g_type_class_peek (GIMP_TYPE_COLOR_SELECT));

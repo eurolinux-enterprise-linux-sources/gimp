@@ -90,9 +90,6 @@ static void          gimp_container_tree_view_set_view_size     (GimpContainerVi
 
 static void          gimp_container_tree_view_real_edit_name    (GimpContainerTreeView       *tree_view);
 
-static gboolean      gimp_container_tree_view_edit_focus_out    (GtkWidget                   *widget,
-                                                                 GdkEvent                    *event,
-                                                                 gpointer                     user_data);
 static void          gimp_container_tree_view_name_started      (GtkCellRendererText         *cell,
                                                                  GtkCellEditable             *editable,
                                                                  const gchar                 *path_str,
@@ -446,14 +443,6 @@ gimp_container_tree_view_new (GimpContainer *container,
     gimp_container_view_set_context (view, context);
 
   return GTK_WIDGET (tree_view);
-}
-
-GtkCellRenderer *
-gimp_container_tree_view_get_name_cell (GimpContainerTreeView *tree_view)
-{
-  g_return_val_if_fail (GIMP_IS_CONTAINER_TREE_VIEW (tree_view), NULL);
-
-  return tree_view->priv->name_cell;
 }
 
 void
@@ -850,17 +839,6 @@ gimp_container_tree_view_real_edit_name (GimpContainerTreeView *tree_view)
 
 /*  callbacks  */
 
-static gboolean
-gimp_container_tree_view_edit_focus_out (GtkWidget *widget,
-                                         GdkEvent  *event,
-                                         gpointer   user_data)
-{
-  /* When focusing out of a tree view, I want its content to be updated
-   * as though it had been activated. */
-  g_signal_emit_by_name (widget, "activate", 0);
-  return TRUE;
-}
-
 static void
 gimp_container_tree_view_name_started (GtkCellRendererText   *cell,
                                        GtkCellEditable       *editable,
@@ -871,10 +849,6 @@ gimp_container_tree_view_name_started (GtkCellRendererText   *cell,
   GtkTreeIter  iter;
 
   path = gtk_tree_path_new_from_string (path_str);
-
-  g_signal_connect (GTK_ENTRY (editable), "focus-out-event",
-                    G_CALLBACK (gimp_container_tree_view_edit_focus_out),
-                    tree_view);
 
   if (gtk_tree_model_get_iter (tree_view->model, &iter, path))
     {
@@ -1004,17 +978,6 @@ gimp_container_tree_view_button_press (GtkWidget             *widget,
 
       multisel_mode = (gtk_tree_selection_get_mode (tree_view->priv->selection)
                        == GTK_SELECTION_MULTIPLE);
-
-      if (! (bevent->state & (gimp_get_extend_selection_mask () |
-                              gimp_get_modify_selection_mask ())))
-        {
-          /*  don't chain up for multi-selection handling if none of
-           *  the participating modifiers is pressed, we implement
-           *  button_press completely ourselves for a reason and don't
-           *  want the default implementation mess up our state
-           */
-          multisel_mode = FALSE;
-        }
 
       gtk_tree_model_get_iter (tree_view->model, &iter, path);
 

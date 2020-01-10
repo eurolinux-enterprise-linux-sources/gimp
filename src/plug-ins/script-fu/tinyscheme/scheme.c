@@ -497,7 +497,7 @@ static num num_rem(num a, num b) {
  e1=num_ivalue(a);
  e2=num_ivalue(b);
  res=e1%e2;
- /* remainder should have same sign as first operand */
+ /* remainder should have same sign as second operand */
  if (res > 0) {
      if (e1 < 0) {
         res -= labs(e2);
@@ -519,7 +519,7 @@ static num num_mod(num a, num b) {
  e2=num_ivalue(b);
  res=e1%e2;
  /* modulo should have same sign as second operand */
- if ((res < 0) != (e2 < 0) && res) { /* if their sign is different... */
+ if (res * e2 < 0) {
    res+=e2;
  }
  ret.value.ivalue=res;
@@ -2132,7 +2132,7 @@ static void atom2str(scheme *sc, pointer l, int f, char **pp, int *plen) {
                /* R5RS says there must be a '.' (unless 'e'?) */
                f = strcspn(p, ".e");
                if (p[f] == 0) {
-                    p[f] = '.'; /* not found, so add '.0' at the end */
+                    p[f] = '.'; // not found, so add '.0' at the end
                     p[f+1] = '0';
                     p[f+2] = 0;
                }
@@ -2177,7 +2177,7 @@ static void atom2str(scheme *sc, pointer l, int f, char **pp, int *plen) {
                       snprintf(p,STRBUFFSIZE,"#\\x%x",c); break;
                     }
 #endif
-                    snprintf(p,STRBUFFSIZE,"#\\%c",c); break;
+                    snprintf(p,STRBUFFSIZE,"#\\x%c",c); break;
                }
           }
      } else if (is_symbol(l)) {
@@ -3115,9 +3115,6 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           if (is_true(sc->value)) {
                if ((sc->code = cdar(sc->code)) == sc->NIL) {
                     s_return(sc,sc->value);
-               }
-               if(!sc->code) {
-                    Error_0(sc,"syntax error in cond");
                }
                if(car(sc->code)==sc->FEED_TO) {
                     if(!is_pair(cdr(sc->code))) {

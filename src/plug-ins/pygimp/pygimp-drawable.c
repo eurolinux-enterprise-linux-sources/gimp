@@ -307,20 +307,26 @@ drw_parasite_list(PyGimpDrawable *self)
 {
     gint num_parasites;
     gchar **parasites;
-    PyObject *ret;
-    gint i;
 
     parasites = gimp_item_get_parasite_list(self->ID, &num_parasites);
+    if (parasites) {
+	PyObject *ret;
+	gint i;
 
-    ret = PyTuple_New(num_parasites);
+	ret = PyTuple_New(num_parasites);
 
-    for (i = 0; i < num_parasites; i++) {
-        PyTuple_SetItem(ret, i, PyString_FromString(parasites[i]));
-        g_free(parasites[i]);
+	for (i = 0; i < num_parasites; i++) {
+	    PyTuple_SetItem(ret, i, PyString_FromString(parasites[i]));
+	    g_free(parasites[i]);
+	}
+
+	g_free(parasites);
+	return ret;
     }
 
-    g_free(parasites);
-    return ret;
+    PyErr_Format(pygimp_error, "could not list parasites on drawable (ID %d)",
+		 self->ID);
+    return NULL;
 }
 
 static PyObject *
@@ -1899,20 +1905,14 @@ pygimp_layer_new(gint32 ID)
     PyGimpLayer *self;
 
     if (!gimp_item_is_valid(ID) || !gimp_item_is_layer(ID)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+	Py_INCREF(Py_None);
+	return Py_None;
     }
 
-
-    if (gimp_item_is_group(ID)) {
-        self = PyObject_NEW(PyGimpGroupLayer, &PyGimpGroupLayer_Type);
-    }
-    else {
-        self = PyObject_NEW(PyGimpLayer, &PyGimpLayer_Type);
-    }
+    self = PyObject_NEW(PyGimpLayer, &PyGimpLayer_Type);
 
     if (self == NULL)
-        return NULL;
+	return NULL;
 
     self->ID = ID;
     self->drawable = NULL;
@@ -1922,19 +1922,6 @@ pygimp_layer_new(gint32 ID)
 
 /* End of code for Layer objects */
 /* -------------------------------------------------------- */
-
-/* Since this help will primaly be seen from within
- * GIMP's Python console, we should make it fit in that
- * window's default size.
- */
-
-#define GROUPLAYER_DOC ""                                \
-"gimp.GroupLayer(img, name="", opacity=100.0,   "        \
-"mode=gimp.NORMAL_MODE)\n"                               \
-"\n"                                                     \
-" Creates a new GroupLayer object that has to be \n"     \
-"subsequently added to an image. Use Image.add_layer \n" \
-"or pdb.gimp_image_insert_layer calls to do that. \n"    \
 
 static PyMethodDef grouplay_methods[] = {
     {NULL,              NULL}           /* sentinel */
@@ -1977,46 +1964,11 @@ grouplay_repr(PyGimpLayer *self)
     return s;
 }
 
-static int
-grouplay_init(PyGimpLayer *self, PyObject *args, PyObject *kwargs)
-{
-    PyGimpImage *img;
-    char *name = "Layer Group";
-    GimpImageType type = GIMP_RGB_IMAGE;
-    double opacity = 100.0;
-    GimpLayerModeEffects mode = GIMP_NORMAL_MODE;
-
-
-    if (!PyArg_ParseTuple(args, "O!|sdi:gimp.Layer.__init__",
-                          &PyGimpImage_Type, &img, &name,
-                          &opacity, &mode))
-        return -1;
-
-    self->ID = gimp_layer_group_new(img->ID);
-
-    self->drawable = NULL;
-
-    if (self->ID < 0) {
-        PyErr_Format(pygimp_error,
-                     "could not create layer group '%s' of type %d on "
-                     "image (ID %d)",
-                     name, type, img->ID);
-        return -1;
-    }
-
-    gimp_layer_set_opacity(self->ID, opacity);
-    gimp_layer_set_mode(self->ID, mode);
-
-    gimp_item_set_name(self->ID, name);
-
-    return 0;
-}
-
 PyTypeObject PyGimpGroupLayer_Type = {
     PyObject_HEAD_INIT(NULL)
     0,                                  /* ob_size */
     "gimp.GroupLayer",                  /* tp_name */
-    sizeof(PyGimpGroupLayer),           /* tp_basicsize */
+    sizeof(PyGimpGroupLayer),                /* tp_basicsize */
     0,                                  /* tp_itemsize */
     /* methods */
     (destructor)drw_dealloc,            /* tp_dealloc */
@@ -2024,7 +1976,7 @@ PyTypeObject PyGimpGroupLayer_Type = {
     (getattrfunc)0,                     /* tp_getattr */
     (setattrfunc)0,                     /* tp_setattr */
     (cmpfunc)drw_cmp,                   /* tp_compare */
-    (reprfunc)grouplay_repr,            /* tp_repr */
+    (reprfunc)grouplay_repr,                 /* tp_repr */
     0,                                  /* tp_as_number */
     0,                                  /* tp_as_sequence */
     0,                                  /* tp_as_mapping */
@@ -2035,7 +1987,7 @@ PyTypeObject PyGimpGroupLayer_Type = {
     (setattrofunc)0,                    /* tp_setattro */
     0,                                  /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,                 /* tp_flags */
-    GROUPLAYER_DOC, /* Documentation string */
+    NULL, /* Documentation string */
     (traverseproc)0,                    /* tp_traverse */
     (inquiry)0,                         /* tp_clear */
     (richcmpfunc)0,                     /* tp_richcompare */
@@ -2044,13 +1996,13 @@ PyTypeObject PyGimpGroupLayer_Type = {
     (iternextfunc)0,                    /* tp_iternext */
     grouplay_methods,                   /* tp_methods */
     0,                                  /* tp_members */
-    grouplay_getsets,                   /* tp_getset */
+    grouplay_getsets,                        /* tp_getset */
     &PyGimpLayer_Type,                  /* tp_base */
     (PyObject *)0,                      /* tp_dict */
     0,                                  /* tp_descr_get */
     0,                                  /* tp_descr_set */
     0,                                  /* tp_dictoffset */
-    (initproc)grouplay_init,            /* tp_init */
+    (initproc)lay_init,                 /* tp_init */
     (allocfunc)0,                       /* tp_alloc */
     (newfunc)0,                         /* tp_new */
 };
@@ -2064,7 +2016,7 @@ pygimp_group_layer_new(gint32 ID)
         Py_INCREF(Py_None);
         return Py_None;
     }
-
+    
     if (!gimp_item_is_group(ID)) {
         return pygimp_layer_new(ID);
     }

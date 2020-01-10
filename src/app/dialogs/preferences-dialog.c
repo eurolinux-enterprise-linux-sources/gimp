@@ -291,14 +291,6 @@ prefs_response (GtkWidget *widget,
             config_copy = g_object_get_data (G_OBJECT (dialog), "config-copy");
 
             gimp_config_reset (config_copy);
-
-            /* don't use the default value if there is no help browser */
-            if (! gimp_help_browser_is_installed (gimp))
-              {
-                g_object_set (config_copy,
-                              "help-browser", GIMP_HELP_BROWSER_WEB_BROWSER,
-                              NULL);
-              }
           }
 
         gtk_widget_destroy (confirm);
@@ -1040,35 +1032,6 @@ prefs_profile_combo_box_new (Gimp         *gimp,
 }
 
 static GtkWidget *
-prefs_hint_box_new (const gchar  *stock_id,
-                    const gchar  *text)
-{
-  GtkWidget *hbox;
-  GtkWidget *image;
-  GtkWidget *label;
-
-  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-
-  image = gtk_image_new_from_stock (stock_id, GTK_ICON_SIZE_BUTTON);
-  gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
-  gtk_widget_show (image);
-
-  label = gtk_label_new (text);
-  gimp_label_set_attributes (GTK_LABEL (label),
-                             PANGO_ATTR_STYLE, PANGO_STYLE_ITALIC,
-                             -1);
-  gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-
-  gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
-  gtk_widget_show (label);
-
-  gtk_widget_show (hbox);
-
-  return hbox;
-}
-
-static GtkWidget *
 prefs_button_add (const gchar *stock_id,
                   const gchar *label,
                   GtkBox      *box)
@@ -1384,15 +1347,6 @@ prefs_message (GtkMessageType  type,
   gtk_widget_show (dialog);
 }
 
-/**
- * prefs_dialog_new:
- * @gimp:  the GIMP instance
- * @config: the configuration model
- *
- * build the Preferences dialog
- *
- * TODO: split into smaller, easy maintainable pieces
- */
 static GtkWidget *
 prefs_dialog_new (Gimp       *gimp,
                   GimpConfig *config)
@@ -1604,6 +1558,13 @@ prefs_dialog_new (Gimp       *gimp,
   prefs_memsize_entry_add (object, "thumbnail-filesize-limit",
                            _("Maximum _filesize for thumbnailing:"),
                            GTK_TABLE (table), 1, size_group);
+
+  /*  File Saving  */
+  vbox2 = prefs_frame_new (_("Saving Images"), GTK_CONTAINER (vbox), FALSE);
+
+  prefs_check_button_add (object, "confirm-on-close",
+                          _("Confirm closing of unsa_ved images"),
+                          GTK_BOX (vbox2));
 
   g_object_unref (size_group);
   size_group = NULL;
@@ -1827,64 +1788,59 @@ prefs_dialog_new (Gimp       *gimp,
                           _("Show help _buttons"),
                           GTK_BOX (vbox2));
 
-  table = prefs_table_new (2, GTK_CONTAINER (vbox2));
-  button = prefs_boolean_combo_box_add (object, "user-manual-online",
-                                        _("Use the online version"),
-                                        _("Use a locally installed copy"),
-                                        _("User manual:"),
-                                        GTK_TABLE (table), 0, size_group);
-  gimp_help_set_help_data (button, NULL, NULL);
+  {
+    GtkWidget   *combo;
+    GtkWidget   *hbox;
+    GtkWidget   *image;
+    GtkWidget   *label;
+    const gchar *icon;
+    const gchar *text;
 
-  if (gimp_help_user_manual_is_installed (gimp))
-    {
-      hbox = prefs_hint_box_new (GIMP_STOCK_INFO,
-                                 _("There's a local installation "
-                                   "of the user manual."));
-    }
-  else
-    {
-      hbox = prefs_hint_box_new (GIMP_STOCK_WARNING,
-                                 _("The user manual is not installed "
-                                   "locally."));
-    }
+    table = prefs_table_new (2, GTK_CONTAINER (vbox2));
+    combo = prefs_boolean_combo_box_add (object, "user-manual-online",
+                                         _("Use the online version"),
+                                         _("Use a locally installed copy"),
+                                         _("User manual:"),
+                                         GTK_TABLE (table), 0, size_group);
+    gimp_help_set_help_data (combo, NULL, NULL);
 
-  gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 1, 2);
-  gtk_widget_show (hbox);
+    if (gimp_help_user_manual_is_installed (gimp))
+      {
+        icon = GIMP_STOCK_INFO;
+        text = _("There's a local installation of the user manual.");
+      }
+    else
+      {
+        icon = GIMP_STOCK_WARNING;
+        text = _("The user manual is not installed locally.");
+      }
+
+    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 1, 2);
+    gtk_widget_show (hbox);
+
+    image = gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON);
+    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+    gtk_widget_show (image);
+
+    label = gtk_label_new (text);
+    gimp_label_set_attributes (GTK_LABEL (label),
+                               PANGO_ATTR_STYLE, PANGO_STYLE_ITALIC,
+                               -1);
+    gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+
+    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+    gtk_widget_show (label);
+  }
 
   /*  Help Browser  */
-#ifdef HAVE_WEBKIT
-  /*  If there is no webkit available, assume we are on a platform
-   *  that doesn't use the help browser, so don't bother showing
-   *  the combo.
-   */
   vbox2 = prefs_frame_new (_("Help Browser"), GTK_CONTAINER (vbox), FALSE);
+  table = prefs_table_new (1, GTK_CONTAINER (vbox2));
 
-  if (gimp_help_browser_is_installed (gimp))
-    {
-      table = prefs_table_new (1, GTK_CONTAINER (vbox2));
-
-      button = prefs_enum_combo_box_add (object, "help-browser", 0, 0,
-                                         _("H_elp browser to use:"),
-                                         GTK_TABLE (table), 0, size_group);
-    }
-  else
-    {
-      hbox = prefs_hint_box_new (GIMP_STOCK_WARNING,
-                                 _("The GIMP help browser doesn't seem to "
-                                   "be installed. Using the web browser "
-                                   "instead."));
-      gtk_box_pack_start (GTK_BOX (vbox2), hbox, FALSE, FALSE, 0);
-      gtk_widget_show (hbox);
-
-      g_object_set (config,
-                    "help-browser", GIMP_HELP_BROWSER_WEB_BROWSER,
-                    NULL);
-    }
-#else
-  g_object_set (config,
-                "help-browser", GIMP_HELP_BROWSER_WEB_BROWSER,
-                NULL);
-#endif /* HAVE_WEBKIT */
+  prefs_enum_combo_box_add (object, "help-browser", 0, 0,
+                            _("H_elp browser to use:"),
+                            GTK_TABLE (table), 0, size_group);
 
   g_object_unref (size_group);
   size_group = NULL;

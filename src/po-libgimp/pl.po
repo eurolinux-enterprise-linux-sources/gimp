@@ -1,42 +1,46 @@
-# Polish translation for gimp-libgimp.
-# Copyright © 2005-2017 the gimp authors.
-# This file is distributed under the same license as the gimp package.
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Aviary.pl
+# Jeśli masz jakiekolwiek uwagi odnoszące się do tłumaczenia lub chcesz
+# pomóc w jego rozwijaniu i pielęgnowaniu, napisz do nas:
+# gnomepl@aviary.pl
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Bartosz Kosiorek <gang65@poczta.onet.pl>, 2005-2011.
-# Piotr Drąg <piotrdrag@gmail.com>, 2011-2017.
-# Aviary.pl <community-poland@mozilla.org>, 2011-2017.
-#
+# Piotr Drąg <piotrdrag@gmail.com>, 2011.
+# Aviary.pl <gnomepl@aviary.pl>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: gimp-libgimp\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-04 13:29+0200\n"
-"PO-Revision-Date: 2017-04-04 13:30+0200\n"
+"POT-Creation-Date: 2011-12-28 02:24+0100\n"
+"PO-Revision-Date: 2011-12-28 02:27+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Polish <community-poland@mozilla.org>\n"
+"Language-Team: Polish <gnomepl@aviary.pl>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
+"X-Poedit-Language: Polish\n"
+"X-Poedit-Country: Poland\n"
 
 #. procedure executed successfully
-#: ../libgimp/gimp.c:1141
+#: ../libgimp/gimp.c:1077
 msgid "success"
 msgstr "powodzenie"
 
 #. procedure execution failed
-#: ../libgimp/gimp.c:1145
+#: ../libgimp/gimp.c:1081
 msgid "execution error"
 msgstr "błąd wykonania"
 
 #. procedure called incorrectly
-#: ../libgimp/gimp.c:1149
+#: ../libgimp/gimp.c:1085
 msgid "calling error"
 msgstr "błąd wywołania"
 
 #. procedure execution cancelled
-#: ../libgimp/gimp.c:1153
+#: ../libgimp/gimp.c:1089
 msgid "cancelled"
 msgstr "anulowano"
 
@@ -47,7 +51,7 @@ msgstr "Wybór pędzla"
 #: ../libgimp/gimpbrushselectbutton.c:927
 #: ../libgimp/gimppatternselectbutton.c:725
 msgid "_Browse..."
-msgstr "_Przeglądaj…"
+msgstr "_Przeglądaj..."
 
 #: ../libgimp/gimpexport.c:243 ../libgimp/gimpexport.c:279
 #, c-format
@@ -100,17 +104,17 @@ msgstr "Wtyczka %s obsługuje tylko obrazy RGB"
 #: ../libgimp/gimpexport.c:307 ../libgimp/gimpexport.c:345
 #: ../libgimp/gimpexport.c:354
 msgid "Convert to RGB"
-msgstr "Konwertuj na RGB"
+msgstr "Przekonwertuj na RGB"
 
 #: ../libgimp/gimpexport.c:315
 #, c-format
 msgid "%s plug-in can only handle grayscale images"
-msgstr "Wtyczka %s obsługuje tylko obrazy w odcieniach szarości"
+msgstr "Wtyczka %s obsługuje tylko obrazy w odcieniach szarości"
 
 #: ../libgimp/gimpexport.c:316 ../libgimp/gimpexport.c:345
 #: ../libgimp/gimpexport.c:366
 msgid "Convert to Grayscale"
-msgstr "Konwertuj na odcienie szarości"
+msgstr "Przekonwertuj na odcienie szarości"
 
 #: ../libgimp/gimpexport.c:324
 #, c-format
@@ -123,7 +127,7 @@ msgid ""
 "Convert to Indexed using default settings\n"
 "(Do it manually to tune the result)"
 msgstr ""
-"Konwertuj na indeksowany za pomocą ustawień domyślnych\n"
+"Przekonwertuj na indeksowany używając ustawień domyślnych\n"
 "(ręczna konwersja pozwoli na lepsze dopasowanie ustawień)"
 
 #: ../libgimp/gimpexport.c:334
@@ -136,13 +140,13 @@ msgid ""
 "Convert to Indexed using bitmap default settings\n"
 "(Do it manually to tune the result)"
 msgstr ""
-"Konwertuj na indeksowany za pomocą ustawień domyślnych dla bitmap\n"
+"Przekonwertuj na indeksowany używając ustawień domyślnych dla bitmap\n"
 "(ręczna konwersja pozwoli na lepsze dopasowanie ustawień)"
 
 #: ../libgimp/gimpexport.c:344
 #, c-format
 msgid "%s plug-in can only handle RGB or grayscale images"
-msgstr "Wtyczka %s obsługuje tylko obrazy RGB lub w odcieniach szarości"
+msgstr "Wtyczka %s obsługuje tylko obrazy RGB lub w odcieniach szarości"
 
 #: ../libgimp/gimpexport.c:353
 #, c-format
@@ -153,7 +157,7 @@ msgstr "Wtyczka %s obsługuje tylko obrazy RGB lub indeksowane"
 #, c-format
 msgid "%s plug-in can only handle grayscale or indexed images"
 msgstr ""
-"Wtyczka %s obsługuje tylko obrazy indeksowane lub w odcieniach szarości"
+"Wtyczka %s obsługuje tylko obrazy indeksowane lub w odcieniach szarości"
 
 #: ../libgimp/gimpexport.c:374
 #, c-format
@@ -180,7 +184,7 @@ msgstr "Eksport pliku"
 msgid "_Ignore"
 msgstr "Z_ignoruj"
 
-#: ../libgimp/gimpexport.c:518 ../libgimp/gimpexport.c:1013
+#: ../libgimp/gimpexport.c:518 ../libgimp/gimpexport.c:988
 msgid "_Export"
 msgstr "Wy_eksportuj"
 
@@ -191,15 +195,15 @@ msgid ""
 "Your image should be exported before it can be saved as %s for the following "
 "reasons:"
 msgstr ""
-"Przed zapisaniem w formacie %s obraz powinien zostać wyeksportowany "
-"z poniższych powodów:"
+"Przed zapisaniem w formacie %s obraz powinien zostać wyeksportowany z "
+"poniższych powodów:"
 
 #. the footline
 #: ../libgimp/gimpexport.c:622
 msgid "The export conversion won't modify your original image."
 msgstr "Konwersja podczas eksportu nie zmodyfikuje pierwotnego obrazu."
 
-#: ../libgimp/gimpexport.c:729
+#: ../libgimp/gimpexport.c:725
 #, c-format
 msgid ""
 "You are about to save a layer mask as %s.\n"
@@ -208,7 +212,7 @@ msgstr ""
 "Próba zapisu maski warstwy jako %s.\n"
 "Widoczne warstwy nie zostaną zapisane."
 
-#: ../libgimp/gimpexport.c:735
+#: ../libgimp/gimpexport.c:731
 #, c-format
 msgid ""
 "You are about to save a channel (saved selection) as %s.\n"
@@ -217,7 +221,7 @@ msgstr ""
 "Próba zapisania kanału (zapisanego zaznaczenia) jako %s.\n"
 "Widoczne warstwy nie zostaną zapisane."
 
-#: ../libgimp/gimpexport.c:1004
+#: ../libgimp/gimpexport.c:979
 msgid "Export Image as "
 msgstr "Eksport obrazu jako "
 
@@ -236,7 +240,7 @@ msgstr "Wybór gradientu"
 #. This string appears in an empty menu as in
 #. * "nothing selected and nothing to select"
 #.
-#: ../libgimp/gimpmenu.c:461 ../libgimpwidgets/gimpintstore.c:259
+#: ../libgimp/gimpmenu.c:461 ../libgimpwidgets/gimpintstore.c:241
 msgid "(Empty)"
 msgstr "(Pusty)"
 
@@ -394,7 +398,7 @@ msgstr "_Zaznaczenie"
 #: ../libgimpbase/gimpbaseenums.c:33
 msgctxt "add-mask-type"
 msgid "_Grayscale copy of layer"
-msgstr "Kop_ia warstwy w odcieniach szarości"
+msgstr "Kop_ia warstwy w odcieniach szarości"
 
 #: ../libgimpbase/gimpbaseenums.c:34
 msgctxt "add-mask-type"
@@ -454,7 +458,7 @@ msgstr "Zastępuje bieżące zaznaczenie"
 #: ../libgimpbase/gimpbaseenums.c:134
 msgctxt "channel-ops"
 msgid "Intersect with the current selection"
-msgstr "Część wspólna z bieżącym zaznaczeniem"
+msgstr "Część wspólna z bieżącym zaznaczeniem"
 
 #: ../libgimpbase/gimpbaseenums.c:167
 msgctxt "channel-type"
@@ -614,12 +618,12 @@ msgstr "Rozlany (dół)"
 #: ../libgimpbase/gimpbaseenums.c:409
 msgctxt "gradient-type"
 msgid "Spiral (cw)"
-msgstr "Spiralny (w prawo)"
+msgstr "Spiralny (w prawo)"
 
 #: ../libgimpbase/gimpbaseenums.c:410
 msgctxt "gradient-type"
 msgid "Spiral (ccw)"
-msgstr "Spiralny (w lewo)"
+msgstr "Spiralny (w lewo)"
 
 #: ../libgimpbase/gimpbaseenums.c:442
 msgctxt "grid-style"
@@ -764,7 +768,7 @@ msgstr "Uruchom wsadowo"
 #: ../libgimpbase/gimpbaseenums.c:676
 msgctxt "run-mode"
 msgid "Run with last used values"
-msgstr "Uruchom z ostatnio użytymi wartościami"
+msgstr "Uruchom z ostatnio użytymi wartościami"
 
 #: ../libgimpbase/gimpbaseenums.c:705
 msgctxt "size-type"
@@ -794,32 +798,32 @@ msgstr "Światła"
 #: ../libgimpbase/gimpbaseenums.c:767
 msgctxt "transform-direction"
 msgid "Normal (Forward)"
-msgstr "Zwykły (przedni)"
+msgstr "Zwykłe (przednie)"
 
 #: ../libgimpbase/gimpbaseenums.c:768
 msgctxt "transform-direction"
 msgid "Corrective (Backward)"
-msgstr "Korekcyjny (tylny)"
+msgstr "Korekcyjne (tylne)"
 
 #: ../libgimpbase/gimpbaseenums.c:799
 msgctxt "transform-resize"
 msgid "Adjust"
-msgstr "Dostosowanie"
+msgstr "Dostosuj"
 
 #: ../libgimpbase/gimpbaseenums.c:800
 msgctxt "transform-resize"
 msgid "Clip"
-msgstr "Przycięcie"
+msgstr "Przytnij"
 
 #: ../libgimpbase/gimpbaseenums.c:801
 msgctxt "transform-resize"
 msgid "Crop to result"
-msgstr "Kadrowanie do wyniku"
+msgstr "Kadruj do wyniku"
 
 #: ../libgimpbase/gimpbaseenums.c:802
 msgctxt "transform-resize"
 msgid "Crop with aspect"
-msgstr "Kadrowanie z proporcjami"
+msgstr "Kadruj z proporcjami"
 
 #: ../libgimpbase/gimpbaseenums.c:935
 msgctxt "pdb-proc-type"
@@ -892,9 +896,9 @@ msgid "Filled"
 msgstr "Wypełnione"
 
 #: ../libgimpbase/gimputils.c:178 ../libgimpbase/gimputils.c:183
-#: ../modules/color-selector-cmyk-lcms.c:458
-#: ../modules/color-selector-cmyk-lcms.c:485
-#: ../modules/display-filter-lcms.c:230 ../modules/display-filter-lcms.c:239
+#: ../modules/color-selector-cmyk-lcms.c:424
+#: ../modules/color-selector-cmyk-lcms.c:430
+#: ../modules/display-filter-lcms.c:178
 msgid "(invalid UTF-8 string)"
 msgstr "(nieprawidłowy tekst UTF-8)"
 
@@ -919,8 +923,8 @@ msgid ""
 "windowing system.  The configured monitor profile is then only used as a "
 "fallback."
 msgstr ""
-"Kiedy jest włączone, to program GIMP będzie próbował użyć profilu kolorów "
-"z menedżera okien. Skonfigurowany profil monitora jest używany w przypadku "
+"Kiedy jest włączone, to program GIMP będzie próbował użyć profilu kolorów z "
+"menedżera okien. Skonfigurowany profil monitora jest używany w przypadku "
 "niepowodzenia."
 
 #: ../libgimpconfig/gimpcolorconfig.c:60
@@ -929,7 +933,7 @@ msgstr "Domyślny profil kolorów przestrzeni roboczej RGB."
 
 #: ../libgimpconfig/gimpcolorconfig.c:62
 msgid "The CMYK color profile used to convert between RGB and CMYK."
-msgstr "Profil kolorów CMYK, używany do konwersji między RGB a CMYK."
+msgstr "Profil kolorów CMYK, używany do konwersji między RGB a CMYK."
 
 #: ../libgimpconfig/gimpcolorconfig.c:64
 msgid "The color profile used for simulating a printed version (softproof)."
@@ -944,7 +948,7 @@ msgid ""
 "Sets how colors are converted from RGB working space to the print simulation "
 "device."
 msgstr ""
-"Ustawia, jak kolory są konwertowane z obszaru roboczego RGB do urządzenia "
+"Ustawia, jak kolory są konwertowane z obszaru roboczego RGB do urządzenia "
 "symulującego drukowanie."
 
 #: ../libgimpconfig/gimpcolorconfig.c:71
@@ -953,7 +957,7 @@ msgid ""
 "represented in the target color space."
 msgstr ""
 "Kiedy jest włączone, to symulacja druku będzie oznaczała kolory, które nie "
-"mogą być przedstawione w docelowej przestrzeni kolorów."
+"mogą być przedstawione w docelowej przestrzeni kolorów."
 
 #: ../libgimpconfig/gimpcolorconfig.c:74
 msgid "The color to use for marking colors which are out of gamut."
@@ -967,7 +971,7 @@ msgstr "Bez zarządzania kolorami"
 #: ../libgimpconfig/gimpcolorconfig-enums.c:25
 msgctxt "color-management-mode"
 msgid "Color managed display"
-msgstr "Z zarządzaniem kolorami"
+msgstr "Z zarządzaniem kolorami"
 
 #: ../libgimpconfig/gimpcolorconfig-enums.c:26
 msgctxt "color-management-mode"
@@ -994,32 +998,32 @@ msgctxt "color-rendering-intent"
 msgid "Absolute colorimetric"
 msgstr "Bezwzględny kolorymetryczny"
 
-#: ../libgimpconfig/gimpconfig-deserialize.c:109
+#: ../libgimpconfig/gimpconfig-deserialize.c:106
 #, c-format
 msgid "value for token %s is not a valid UTF-8 string"
 msgstr "wartość tokenu %s nie jest prawidłowym tekstem UTF-8"
 
 #. please don't translate 'yes' and 'no'
-#: ../libgimpconfig/gimpconfig-deserialize.c:451
+#: ../libgimpconfig/gimpconfig-deserialize.c:444
 #, c-format
 msgid "expected 'yes' or 'no' for boolean token %s, got '%s'"
 msgstr ""
-"oczekiwano wartości „yes” lub „no” tokenu logicznego %s, otrzymano „%s”"
+"oczekiwano wartości \"yes\" lub \"no\" tokenu logicznego %s, otrzymano \"%s\""
 
-#: ../libgimpconfig/gimpconfig-deserialize.c:525
+#: ../libgimpconfig/gimpconfig-deserialize.c:518
 #, c-format
 msgid "invalid value '%s' for token %s"
-msgstr "nieprawidłowa wartość „%s” tokenu %s"
+msgstr "nieprawidłowa wartość \"%s\" tokenu %s"
 
-#: ../libgimpconfig/gimpconfig-deserialize.c:540
+#: ../libgimpconfig/gimpconfig-deserialize.c:533
 #, c-format
 msgid "invalid value '%ld' for token %s"
-msgstr "nieprawidłowa wartość „%ld” tokenu %s"
+msgstr "nieprawidłowa wartość \"%ld\" tokenu %s"
 
-#: ../libgimpconfig/gimpconfig-deserialize.c:609
+#: ../libgimpconfig/gimpconfig-deserialize.c:602
 #, c-format
 msgid "while parsing token '%s': %s"
-msgstr "podczas przetwarzania tokenu „%s”: %s"
+msgstr "podczas przetwarzaniu tokenu \"%s\": %s"
 
 #: ../libgimpconfig/gimpconfig-iface.c:482
 #: ../libgimpconfig/gimpconfig-iface.c:495 ../libgimpconfig/gimpscanner.c:559
@@ -1028,7 +1032,7 @@ msgstr "podczas przetwarzania tokenu „%s”: %s"
 msgid "fatal parse error"
 msgstr "krytyczny błąd podczas przetwarzania"
 
-#: ../libgimpconfig/gimpconfig-path.c:389
+#: ../libgimpconfig/gimpconfig-path.c:387
 #, c-format
 msgid "Cannot expand ${%s}"
 msgstr "Nie można rozwinąć ${%s}"
@@ -1037,17 +1041,17 @@ msgstr "Nie można rozwinąć ${%s}"
 #: ../libgimpconfig/gimpconfigwriter.c:728
 #, c-format
 msgid "Error writing to '%s': %s"
-msgstr "Błąd podczas zapisywania do „%s”: %s"
+msgstr "Błąd podczas zapisywania do \"%s\": %s"
 
 #: ../libgimpconfig/gimpconfigwriter.c:145
 #, c-format
 msgid "Could not create temporary file for '%s': %s"
-msgstr "Nie można utworzyć pliku tymczasowego dla „%s”: %s"
+msgstr "Nie można utworzyć pliku tymczasowego dla \"%s\": %s"
 
 #: ../libgimpconfig/gimpconfigwriter.c:158
 #, c-format
 msgid "Could not open '%s' for writing: %s"
-msgstr "Nie można otworzyć „%s” do zapisania: %s"
+msgstr "Nie można otworzyć \"%s\" do zapisania: %s"
 
 #: ../libgimpconfig/gimpconfigwriter.c:689
 #: ../libgimpconfig/gimpconfigwriter.c:709
@@ -1056,7 +1060,7 @@ msgid ""
 "Error writing to temporary file for '%s': %s\n"
 "The original file has not been touched."
 msgstr ""
-"Błąd podczas zapisywania do pliku tymczasowego dla „%s”: %s\n"
+"Błąd podczas zapisywania do pliku tymczasowego dla \"%s\": %s\n"
 "Pierwotny plik nie został zmieniony."
 
 #: ../libgimpconfig/gimpconfigwriter.c:717
@@ -1065,13 +1069,13 @@ msgid ""
 "Error writing to temporary file for '%s': %s\n"
 "No file has been created."
 msgstr ""
-"Błąd podczas zapisywania do pliku tymczasowego dla „%s”: %s\n"
+"Błąd podczas zapisywania do pliku tymczasowego dla \"%s\": %s\n"
 "Nie utworzono pliku."
 
 #: ../libgimpconfig/gimpconfigwriter.c:741
 #, c-format
 msgid "Could not create '%s': %s"
-msgstr "Nie można utworzyć „%s”: %s"
+msgstr "Nie można utworzyć \"%s\": %s"
 
 #: ../libgimpconfig/gimpscanner.c:268
 #, c-format
@@ -1082,19 +1086,20 @@ msgstr "nieprawidłowy tekst UTF-8"
 #: ../libgimpconfig/gimpscanner.c:431
 #, c-format
 msgid "expected 'yes' or 'no' for boolean token, got '%s'"
-msgstr "oczekiwano wartości „yes” lub „no” tokenu logicznego, otrzymano „%s”"
+msgstr ""
+"oczekiwano wartości \"yes\" lub \"no\" tokenu logicznego, otrzymano \"%s\""
 
 #: ../libgimpconfig/gimpscanner.c:668
 #, c-format
 msgid "Error while parsing '%s' in line %d: %s"
-msgstr "Błąd podczas przetwarzania „%s” w %d. wierszu: %s"
+msgstr "Błąd podczas przetwarzania \"%s\" w wierszu %d: %s"
 
 #: ../libgimpmodule/gimpmodule.c:163 ../libgimpmodule/gimpmodule.c:181
 #: ../libgimpmodule/gimpmodule.c:290 ../libgimpmodule/gimpmodule.c:317
 #: ../libgimpmodule/gimpmodule.c:443
 #, c-format
 msgid "Module '%s' load error: %s"
-msgstr "Błąd wczytywania modułu „%s”: %s"
+msgstr "Błąd wczytywania modułu \"%s\": %s"
 
 #: ../libgimpmodule/gimpmodule.c:385
 msgid "Module error"
@@ -1110,31 +1115,31 @@ msgstr "Wczytanie się nie powiodło"
 
 #: ../libgimpmodule/gimpmodule.c:388
 msgid "Not loaded"
-msgstr "Niewczytany"
+msgstr "Niewczytano"
 
-#: ../libgimpthumb/gimpthumb-utils.c:153
+#: ../libgimpthumb/gimpthumb-utils.c:131
 #, c-format
 msgid ""
 "Cannot determine a valid home directory.\n"
 "Thumbnails will be stored in the folder for temporary files (%s) instead."
 msgstr ""
 "Nie można ustalić prawidłowego katalogu domowego.\n"
-"Miniatury będą przechowywane w katalogu na pliki tymczasowe (%s)."
+"Miniatury będą przechowywane w katalogu na pliki tymczasowe (%s)."
 
-#: ../libgimpthumb/gimpthumb-utils.c:277 ../libgimpthumb/gimpthumb-utils.c:345
+#: ../libgimpthumb/gimpthumb-utils.c:255 ../libgimpthumb/gimpthumb-utils.c:323
 #, c-format
 msgid "Failed to create thumbnail folder '%s'."
-msgstr "Utworzenie katalogu miniatur „%s” się nie powiodło."
+msgstr "Utworzenie katalogu miniatur \"%s\" się nie powiodło."
 
 #: ../libgimpthumb/gimpthumbnail.c:508
 #, c-format
 msgid "Thumbnail contains no Thumb::URI tag"
 msgstr "Miniatura nie zawiera znacznika Thumb::URI"
 
-#: ../libgimpthumb/gimpthumbnail.c:905
+#: ../libgimpthumb/gimpthumbnail.c:904
 #, c-format
 msgid "Could not create thumbnail for %s: %s"
-msgstr "Nie można utworzyć miniatury dla „%s”: %s"
+msgstr "Nie można utworzyć miniatury dla \"%s\": %s"
 
 #: ../libgimpwidgets/gimpbrowser.c:112
 msgid "_Search:"
@@ -1158,7 +1163,7 @@ msgstr "_Biały"
 
 #: ../libgimpwidgets/gimpcolorprofilestore.c:146
 msgid "Select color profile from disk..."
-msgstr "Wybierz profil kolorów z dysku…"
+msgstr "Wybór profilu kolorów z dysku..."
 
 #: ../libgimpwidgets/gimpcolorprofilestore.c:280
 msgctxt "profile"
@@ -1169,23 +1174,23 @@ msgstr "Brak"
 msgid "Scales"
 msgstr "Skale"
 
-#: ../libgimpwidgets/gimpcolorselection.c:222
+#: ../libgimpwidgets/gimpcolorselection.c:220
 msgid "Current:"
 msgstr "Bieżący:"
 
-#: ../libgimpwidgets/gimpcolorselection.c:231
+#: ../libgimpwidgets/gimpcolorselection.c:229
 msgid "Old:"
 msgstr "Poprzedni:"
 
-#: ../libgimpwidgets/gimpcolorselection.c:318
+#: ../libgimpwidgets/gimpcolorselection.c:314
 msgid ""
 "Hexadecimal color notation as used in HTML and CSS.  This entry also accepts "
 "CSS color names."
 msgstr ""
-"Szesnastkowy zapis koloru jest używany w językach HTML i CSS. To pole "
+"Heksadecymalny zapis koloru jest używany w językach HTML i CSS. To pole "
 "dopuszcza również nazwy kolorów CSS."
 
-#: ../libgimpwidgets/gimpcolorselection.c:324
+#: ../libgimpwidgets/gimpcolorselection.c:320
 msgid "HTML _notation:"
 msgstr "_Zapis języka HTML:"
 
@@ -1211,52 +1216,56 @@ msgstr "Naciśnięcie klawisza F1 wyświetli pomoc"
 
 #: ../libgimpwidgets/gimpmemsizeentry.c:220
 msgid "Kilobytes"
-msgstr "KB"
+msgstr "Kilobajty"
 
 #: ../libgimpwidgets/gimpmemsizeentry.c:221
 msgid "Megabytes"
-msgstr "MB"
+msgstr "Megabajty"
 
 #: ../libgimpwidgets/gimpmemsizeentry.c:222
 msgid "Gigabytes"
-msgstr "GB"
+msgstr "Gigabajty"
 
 #. Count label
-#: ../libgimpwidgets/gimppageselector.c:269
-#: ../libgimpwidgets/gimppageselector.c:1067
+#: ../libgimpwidgets/gimppageselector.c:282
+#: ../libgimpwidgets/gimppageselector.c:1178
 msgid "Nothing selected"
 msgstr "Nic nie zaznaczono"
 
-#: ../libgimpwidgets/gimppageselector.c:287
+#: ../libgimpwidgets/gimppageselector.c:300
 msgid "Select _All"
-msgstr "Z_aznacz wszystko"
+msgstr "Z_aznacz wszystkie"
 
-#: ../libgimpwidgets/gimppageselector.c:307
+#: ../libgimpwidgets/gimppageselector.c:320
 msgid "Select _range:"
 msgstr "_Zaznaczenie zakresu:"
 
-#: ../libgimpwidgets/gimppageselector.c:319
+#: ../libgimpwidgets/gimppageselector.c:332
 msgid "Open _pages as"
 msgstr "Otwórz _strony jako"
 
-#: ../libgimpwidgets/gimppageselector.c:449
-#: ../libgimpwidgets/gimppageselector.c:647
+#: ../libgimpwidgets/gimppageselector.c:433
+msgid "Page 000"
+msgstr "Strona 000"
+
+#: ../libgimpwidgets/gimppageselector.c:521
+#: ../libgimpwidgets/gimppageselector.c:758
 #, c-format
 msgid "Page %d"
-msgstr "%d. strona"
+msgstr "Strona %d"
 
-#: ../libgimpwidgets/gimppageselector.c:1072
+#: ../libgimpwidgets/gimppageselector.c:1183
 msgid "One page selected"
 msgstr "Zaznaczono jedną stronę"
 
-#: ../libgimpwidgets/gimppageselector.c:1079
-#: ../libgimpwidgets/gimppageselector.c:1083
+#: ../libgimpwidgets/gimppageselector.c:1190
+#: ../libgimpwidgets/gimppageselector.c:1194
 #, c-format
 msgid "%d page selected"
 msgid_plural "All %d pages selected"
-msgstr[0] "Zaznaczono %d stronę"
-msgstr[1] "Zaznaczono %d strony"
-msgstr[2] "Zaznaczono %d stron"
+msgstr[0] "%d stronę zaznaczono"
+msgstr[1] "%d strony zaznaczono"
+msgstr[2] "%d stron zaznaczono"
 
 #: ../libgimpwidgets/gimppatheditor.c:239
 msgid "Writable"
@@ -1266,12 +1275,12 @@ msgstr "Zapisywalny"
 msgid "Folder"
 msgstr "Katalog"
 
-#: ../libgimpwidgets/gimppickbutton.c:130
+#: ../libgimpwidgets/gimppickbutton.c:127
 msgid ""
 "Click the eyedropper, then click a color anywhere on your screen to select "
 "that color."
 msgstr ""
-"Kliknięcie zakraplacza, a następnie dowolnego punktu obrazu pobierze z niego "
+"Kliknięcie zakraplacza, a następnie dowolnego punktu obrazu pobierze z niego "
 "kolor."
 
 #. toggle button to (de)activate the instant preview
@@ -1305,7 +1314,7 @@ msgstr "Wyśrodk_uj"
 
 #: ../libgimpwidgets/gimpstock.c:129
 msgid "_Duplicate"
-msgstr "_Powiel"
+msgstr "_Duplikuj"
 
 #: ../libgimpwidgets/gimpstock.c:130
 msgid "_Edit"
@@ -1369,7 +1378,7 @@ msgstr "_Zetnij"
 
 #: ../libgimpwidgets/gimpunitmenu.c:264
 msgid "More..."
-msgstr "Inne…"
+msgstr "Inne..."
 
 #: ../libgimpwidgets/gimpunitmenu.c:490
 msgid "Unit Selection"
@@ -1388,8 +1397,8 @@ msgid ""
 "Use this value for random number generator seed - this allows you to repeat "
 "a given \"random\" operation"
 msgstr ""
-"Wartość ta może zostać użyta w roli ziarna generatora liczb losowych, co "
-"pozwala na dokładne powtórzenie wykonanego „losowego” działania"
+"Wartość ta może zostać użyta w roli ziarna generatora liczb losowych, co "
+"pozwala na dokładne powtórzenie wykonanego \"losowego\" działania"
 
 #: ../libgimpwidgets/gimpwidgets.c:520
 msgid "_New Seed"
@@ -1518,71 +1527,71 @@ msgctxt "zoom-type"
 msgid "Zoom out"
 msgstr "Zmniejszenie"
 
-#: ../modules/color-selector-cmyk-lcms.c:91
+#: ../modules/color-selector-cmyk-lcms.c:86
 msgid "CMYK color selector (using color profile)"
-msgstr "Wybór koloru z przestrzeni CMYK (za pomocą profilu kolorów)"
+msgstr "Wybór koloru z przestrzeni CMYK (używając profilu kolorów)"
 
-#: ../modules/color-selector-cmyk-lcms.c:154
+#: ../modules/color-selector-cmyk-lcms.c:149
 #: ../modules/color-selector-cmyk.c:101
 msgid "CMYK"
 msgstr "CMYK"
 
 #. Cyan
-#: ../modules/color-selector-cmyk-lcms.c:175
+#: ../modules/color-selector-cmyk-lcms.c:168
 #: ../modules/color-selector-cmyk.c:124
 msgid "_C"
 msgstr "_C"
 
 #. Magenta
-#: ../modules/color-selector-cmyk-lcms.c:177
+#: ../modules/color-selector-cmyk-lcms.c:170
 #: ../modules/color-selector-cmyk.c:126
 msgid "_M"
 msgstr "_M"
 
 #. Yellow
-#: ../modules/color-selector-cmyk-lcms.c:179
+#: ../modules/color-selector-cmyk-lcms.c:172
 #: ../modules/color-selector-cmyk.c:128
 msgid "_Y"
 msgstr "_Y"
 
 #. Key (Black)
-#: ../modules/color-selector-cmyk-lcms.c:181
+#: ../modules/color-selector-cmyk-lcms.c:174
 #: ../modules/color-selector-cmyk.c:130
 msgid "_K"
 msgstr "_K"
 
-#: ../modules/color-selector-cmyk-lcms.c:185
+#: ../modules/color-selector-cmyk-lcms.c:178
 #: ../modules/color-selector-cmyk.c:134
 msgid "Cyan"
 msgstr "Niebieskozielony"
 
-#: ../modules/color-selector-cmyk-lcms.c:186
+#: ../modules/color-selector-cmyk-lcms.c:179
 #: ../modules/color-selector-cmyk.c:135
 msgid "Magenta"
 msgstr "Purpurowy"
 
-#: ../modules/color-selector-cmyk-lcms.c:187
+#: ../modules/color-selector-cmyk-lcms.c:180
 #: ../modules/color-selector-cmyk.c:136
 msgid "Yellow"
 msgstr "Żółty"
 
-#: ../modules/color-selector-cmyk-lcms.c:188
+#: ../modules/color-selector-cmyk-lcms.c:181
 #: ../modules/color-selector-cmyk.c:137
 msgid "Black"
 msgstr "Czarny"
 
-#: ../modules/color-selector-cmyk-lcms.c:425
+#: ../modules/color-selector-cmyk-lcms.c:412
 msgid "Profile: (none)"
 msgstr "Profil: (brak)"
 
-#: ../modules/color-selector-cmyk-lcms.c:488
+#: ../modules/color-selector-cmyk-lcms.c:433
 #, c-format
 msgid "Profile: %s"
 msgstr "Profil: %s"
 
 #: ../modules/color-selector-cmyk.c:70
 msgid "CMYK color selector"
-msgstr "Wybór koloru z przestrzeni CMYK"
+msgstr "Wybór koloru z przestrzeni CMYK"
 
 #: ../modules/color-selector-cmyk.c:171
 msgid "Black _pullout:"
@@ -1604,11 +1613,11 @@ msgstr "Akwarela"
 msgid "Pressure"
 msgstr "Nacisk"
 
-#: ../modules/color-selector-wheel.c:69
+#: ../modules/color-selector-wheel.c:71
 msgid "HSV color wheel"
 msgstr "Kółko koloru HSV"
 
-#: ../modules/color-selector-wheel.c:101
+#: ../modules/color-selector-wheel.c:102
 msgid "Wheel"
 msgstr "Kółko"
 
@@ -1632,92 +1641,98 @@ msgstr "DirectX DirectInput"
 #: ../modules/controller-dx-dinput.c:418
 #, c-format
 msgid "Button %d"
-msgstr "%d. przycisk"
+msgstr "Przycisk %d"
 
 #: ../modules/controller-dx-dinput.c:421
 #, c-format
 msgid "Button %d Press"
-msgstr "Naciśnięcie %d. przycisku"
+msgstr "Naciśnięcie przycisku %d"
 
 #: ../modules/controller-dx-dinput.c:424
 #, c-format
 msgid "Button %d Release"
-msgstr "Zwolnienie %d. przycisku"
+msgstr "Zwolnienie przycisku %d"
 
-#: ../modules/controller-dx-dinput.c:441 ../modules/controller-linux-input.c:89
+#: ../modules/controller-dx-dinput.c:441
+#: ../modules/controller-linux-input.c:89
 msgid "X Move Left"
-msgstr "Poziomy ruch w lewo"
+msgstr "Ruch w lewo X"
 
-#: ../modules/controller-dx-dinput.c:444 ../modules/controller-linux-input.c:90
+#: ../modules/controller-dx-dinput.c:444
+#: ../modules/controller-linux-input.c:90
 msgid "X Move Right"
-msgstr "Poziomy ruch w prawo"
+msgstr "Ruch w prawo X"
 
 #: ../modules/controller-dx-dinput.c:450
 msgid "Y Move Away"
-msgstr "Pionowy ruch od"
+msgstr "Duży ruch Y"
 
 #: ../modules/controller-dx-dinput.c:453
 msgid "Y Move Near"
-msgstr "Pionowy ruch do"
+msgstr "Mały ruch Y"
 
-#: ../modules/controller-dx-dinput.c:459 ../modules/controller-linux-input.c:93
+#: ../modules/controller-dx-dinput.c:459
+#: ../modules/controller-linux-input.c:93
 msgid "Z Move Up"
-msgstr "Ruch do góry na osi Z"
+msgstr "Ruch do góry Z"
 
-#: ../modules/controller-dx-dinput.c:462 ../modules/controller-linux-input.c:94
+#: ../modules/controller-dx-dinput.c:462
+#: ../modules/controller-linux-input.c:94
 msgid "Z Move Down"
-msgstr "Ruch do dołu na osi Z"
+msgstr "Ruch do dołu Z"
 
 #: ../modules/controller-dx-dinput.c:468
 msgid "X Axis Tilt Away"
-msgstr "Poziome wychylenie od"
+msgstr "Wychylenie Y duże"
 
 #: ../modules/controller-dx-dinput.c:471
 msgid "X Axis Tilt Near"
-msgstr "Poziome wychylenie do"
+msgstr "Wychylenie Y małe"
 
-#: ../modules/controller-dx-dinput.c:477 ../modules/controller-linux-input.c:98
+#: ../modules/controller-dx-dinput.c:477
+#: ../modules/controller-linux-input.c:98
 msgid "Y Axis Tilt Right"
-msgstr "Pionowe wychylenie w prawo"
+msgstr "Wychylenie Y w prawo"
 
-#: ../modules/controller-dx-dinput.c:480 ../modules/controller-linux-input.c:99
+#: ../modules/controller-dx-dinput.c:480
+#: ../modules/controller-linux-input.c:99
 msgid "Y Axis Tilt Left"
-msgstr "Pionowe wychylenie w lewo"
+msgstr "Wychylenie Y w lewo"
 
 #: ../modules/controller-dx-dinput.c:486
 #: ../modules/controller-linux-input.c:100
 msgid "Z Axis Turn Left"
-msgstr "Skręt wychylenia na osi Z w lewo"
+msgstr "Wychylenie Z skręt w lewo"
 
 #: ../modules/controller-dx-dinput.c:489
 #: ../modules/controller-linux-input.c:101
 msgid "Z Axis Turn Right"
-msgstr "Skręt wychylenia na osi Z w prawo"
+msgstr "Wychylenie Z skręt w prawo"
 
 #: ../modules/controller-dx-dinput.c:500
 #, c-format
 msgid "Slider %d Increase"
-msgstr "Zwiększenie %d. suwaka"
+msgstr "Zwiększenie suwaka %d"
 
 #: ../modules/controller-dx-dinput.c:503
 #, c-format
 msgid "Slider %d Decrease"
-msgstr "Zmniejszenie %d. suwaka"
+msgstr "Zmniejszenie suwaka %d"
 
 #: ../modules/controller-dx-dinput.c:513
 #, c-format
 msgid "POV %d X View"
-msgstr "Poziomy widok POV %d"
+msgstr "POV %d widok X"
 
 #: ../modules/controller-dx-dinput.c:516
 #, c-format
 msgid "POV %d Y View"
-msgstr "Pionowy widok POV %d"
+msgstr "POV %d widok Y"
 
 #: ../modules/controller-dx-dinput.c:519
 #, c-format
 msgid "POV %d Return"
-msgstr "Powrót POV %d"
+msgstr "POV %d powrót"
 
 #: ../modules/controller-dx-dinput.c:1081
 msgid "DirectInput Events"
@@ -1735,43 +1750,43 @@ msgstr "Urządzenie jest niedostępne"
 
 #: ../modules/controller-linux-input.c:57
 msgid "Button 0"
-msgstr "0. przycisk"
+msgstr "Przycisk 0"
 
 #: ../modules/controller-linux-input.c:58
 msgid "Button 1"
-msgstr "1. przycisk"
+msgstr "Przycisk 1"
 
 #: ../modules/controller-linux-input.c:59
 msgid "Button 2"
-msgstr "2. przycisk"
+msgstr "Przycisk 2"
 
 #: ../modules/controller-linux-input.c:60
 msgid "Button 3"
-msgstr "3. przycisk"
+msgstr "Przycisk 3"
 
 #: ../modules/controller-linux-input.c:61
 msgid "Button 4"
-msgstr "4. przycisk"
+msgstr "Przycisk 4"
 
 #: ../modules/controller-linux-input.c:62
 msgid "Button 5"
-msgstr "5. przycisk"
+msgstr "Przycisk 5"
 
 #: ../modules/controller-linux-input.c:63
 msgid "Button 6"
-msgstr "6. przycisk"
+msgstr "Przycisk 6"
 
 #: ../modules/controller-linux-input.c:64
 msgid "Button 7"
-msgstr "7. przycisk"
+msgstr "Przycisk 7"
 
 #: ../modules/controller-linux-input.c:65
 msgid "Button 8"
-msgstr "8. przycisk"
+msgstr "Przycisk 8"
 
 #: ../modules/controller-linux-input.c:66
 msgid "Button 9"
-msgstr "9. przycisk"
+msgstr "Przycisk 9"
 
 #: ../modules/controller-linux-input.c:67
 msgid "Button Mouse"
@@ -1803,7 +1818,7 @@ msgstr "Przedni przycisk"
 
 #: ../modules/controller-linux-input.c:74
 msgid "Button Back"
-msgstr "Tylny przycisk"
+msgstr "Tylni przycisk"
 
 #: ../modules/controller-linux-input.c:75
 msgid "Button Task"
@@ -1823,43 +1838,43 @@ msgstr "Przycisk biegu następnego"
 
 #: ../modules/controller-linux-input.c:91
 msgid "Y Move Forward"
-msgstr "Pionowy ruch naprzód"
+msgstr "Ruch naprzód Y"
 
 #: ../modules/controller-linux-input.c:92
 msgid "Y Move Back"
-msgstr "Pionowy ruch w tył"
+msgstr "Ruch w tył Y"
 
 #: ../modules/controller-linux-input.c:96
 msgid "X Axis Tilt Forward"
-msgstr "Poziome wychylenie do przodu"
+msgstr "Wychylenie X do przodu"
 
 #: ../modules/controller-linux-input.c:97
 msgid "X Axis Tilt Back"
-msgstr "Poziome wychylenie do tyłu"
+msgstr "Wychylenie X do tyłu"
 
 #: ../modules/controller-linux-input.c:103
 msgid "Horiz. Wheel Turn Back"
-msgstr "Poziome kółko w tył"
+msgstr "Poziome kółko w tył"
 
 #: ../modules/controller-linux-input.c:104
 msgid "Horiz. Wheel Turn Forward"
-msgstr "Poziome kółko w przód"
+msgstr "Poziome kółko w przód"
 
 #: ../modules/controller-linux-input.c:105
 msgid "Dial Turn Left"
-msgstr "Skręt w lewo"
+msgstr "Skręt w lewo"
 
 #: ../modules/controller-linux-input.c:106
 msgid "Dial Turn Right"
-msgstr "Skręt w prawo"
+msgstr "Skręt w prawo"
 
 #: ../modules/controller-linux-input.c:107
 msgid "Wheel Turn Left"
-msgstr "Obrót kółka w lewo"
+msgstr "Obrót kółka w lewo"
 
 #: ../modules/controller-linux-input.c:108
 msgid "Wheel Turn Right"
-msgstr "Obrót kółka w prawo"
+msgstr "Obrót kółka w prawo"
 
 #: ../modules/controller-linux-input.c:177
 msgid "Linux input event controller"
@@ -1881,7 +1896,7 @@ msgstr "Zdarzenia wprowadzania systemu Linux"
 #: ../modules/controller-midi.c:479
 #, c-format
 msgid "Reading from %s"
-msgstr "Odczytywanie z %s"
+msgstr "Odczytywanie z %s"
 
 #: ../modules/controller-linux-input.c:568
 #: ../modules/controller-linux-input.c:622 ../modules/controller-midi.c:435
@@ -1904,7 +1919,7 @@ msgstr "Nazwa urządzenia do odczytywania zdarzeń MIDI."
 
 #: ../modules/controller-midi.c:205
 msgid "Enter 'alsa' to use the ALSA sequencer."
-msgstr "Wpisanie „alsa” użyje sekwencera ALSA."
+msgstr "Wpisanie \"alsa\" użyje sekwencera ALSA."
 
 #: ../modules/controller-midi.c:220
 msgid "Channel:"
@@ -1975,7 +1990,7 @@ msgstr "Typ ślepoty _barw:"
 
 #: ../modules/display-filter-gamma.c:86
 msgid "Gamma color display filter"
-msgstr "Filtr wyświetlania kolorów z korekcją gamma"
+msgstr "Filtr wyświetlania kolorów z korekcją gamma"
 
 #: ../modules/display-filter-gamma.c:125
 msgid "Gamma"
@@ -1987,7 +2002,7 @@ msgstr "_Gamma:"
 
 #: ../modules/display-filter-high-contrast.c:86
 msgid "High Contrast color display filter"
-msgstr "Filtr wyświetlania kolorów z wysokim kontrastem"
+msgstr "Filtr wyświetlania kolorów z wysokim kontrastem"
 
 #: ../modules/display-filter-high-contrast.c:125
 msgid "Contrast"
@@ -1997,70 +2012,70 @@ msgstr "Kontrast"
 msgid "Contrast c_ycles:"
 msgstr "_Cykle kontrastu:"
 
-#: ../modules/display-filter-lcms.c:104
+#: ../modules/display-filter-lcms.c:97
 msgid "Color management display filter using ICC color profiles"
 msgstr "Filtr zarządzania kolorami, używający profili kolorów ICC"
 
-#: ../modules/display-filter-lcms.c:136
+#: ../modules/display-filter-lcms.c:129
 msgid "Color Management"
 msgstr "Zarządzanie kolorami"
 
-#: ../modules/display-filter-lcms.c:265 ../modules/display-filter-lcms.c:267
+#: ../modules/display-filter-lcms.c:186
 msgid "None"
 msgstr "Brak"
 
-#: ../modules/display-filter-lcms.c:289
+#: ../modules/display-filter-lcms.c:207
 msgid ""
 "This filter takes its configuration from the Color Management section in the "
 "Preferences dialog."
 msgstr ""
-"Ten filtr pobiera konfigurację z sekcji Zarządzanie kolorami okna "
+"Ten filtr pobiera konfigurację z sekcji Zarządzanie kolorami okna "
 "Preferencji."
 
-#: ../modules/display-filter-lcms.c:303
+#: ../modules/display-filter-lcms.c:221
 msgid "Mode of operation:"
 msgstr "Tryb działania:"
 
-#: ../modules/display-filter-lcms.c:310
+#: ../modules/display-filter-lcms.c:228
 msgid "Image profile:"
 msgstr "Profil obrazu:"
 
-#: ../modules/display-filter-lcms.c:318
+#: ../modules/display-filter-lcms.c:236
 msgid "Monitor profile:"
 msgstr "Profil monitora:"
 
-#: ../modules/display-filter-lcms.c:326
+#: ../modules/display-filter-lcms.c:244
 msgid "Print simulation profile:"
 msgstr "Profil symulacji wydruku:"
 
-#: ../modules/display-filter-proof.c:98
+#: ../modules/display-filter-proof.c:93
 msgid "Color proof filter using ICC color profile"
-msgstr "Filtr korygujący kolory za pomocą profilu ICC"
+msgstr "Filtr korygujący kolory używając profilu ICC"
 
-#: ../modules/display-filter-proof.c:146
+#: ../modules/display-filter-proof.c:141
 msgid "Color Proof"
 msgstr "Korekcja kolorów"
 
-#: ../modules/display-filter-proof.c:381
+#: ../modules/display-filter-proof.c:338
 msgid "Choose an ICC Color Profile"
 msgstr "Wybór profilu kolorów ICC"
 
-#: ../modules/display-filter-proof.c:408
+#: ../modules/display-filter-proof.c:365
 msgid "All files (*.*)"
 msgstr "Wszystkie pliki (*.*)"
 
-#: ../modules/display-filter-proof.c:413
+#: ../modules/display-filter-proof.c:370
 msgid "ICC color profile (*.icc, *.icm)"
 msgstr "Profil kolorów ICC (*.icc, *.icm)"
 
-#: ../modules/display-filter-proof.c:471
+#: ../modules/display-filter-proof.c:428
 msgid "_Profile:"
 msgstr "_Profil:"
 
-#: ../modules/display-filter-proof.c:477
+#: ../modules/display-filter-proof.c:434
 msgid "_Intent:"
 msgstr "Pożądany _efekt:"
 
-#: ../modules/display-filter-proof.c:482
+#: ../modules/display-filter-proof.c:439
 msgid "_Black Point Compensation"
 msgstr "Kompensacja _czarnego punktu"

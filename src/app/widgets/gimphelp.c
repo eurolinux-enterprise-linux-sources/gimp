@@ -23,10 +23,6 @@
 
 #include <string.h>
 
-#ifdef PLATFORM_OSX
-#import <Foundation/Foundation.h>
-#endif
-
 #include <gtk/gtk.h>
 
 #include "libgimpbase/gimpbase.h"
@@ -138,17 +134,6 @@ gimp_help_show (Gimp         *gimp,
 
       g_idle_add ((GSourceFunc) gimp_idle_help, idle_help);
     }
-}
-
-gboolean
-gimp_help_browser_is_installed (Gimp *gimp)
-{
-  g_return_val_if_fail (GIMP_IS_GIMP (gimp), FALSE);
-
-  if (gimp_pdb_lookup_procedure (gimp->pdb, "extension-gimp-help-browser"))
-    return TRUE;
-
-  return FALSE;
 }
 
 gboolean
@@ -351,8 +336,7 @@ gimp_help_browser (Gimp         *gimp,
                                _("Help browser doesn't start"),
                                _("Could not start the GIMP help browser "
                                  "plug-in."),
-                               _("You may instead use the web browser "
-                                 "for reading the help pages."));
+                               NULL);
       busy = FALSE;
 
       return FALSE;
@@ -577,113 +561,15 @@ gimp_help_get_default_domain_uri (Gimp *gimp)
   return uri;
 }
 
-/**
- * gimp_help_get_locales:
- *
- * @gimp:   the GIMP instance with the configuration to read from
- *
- * Returns: a colon (:) separated list of language identifiers in descending
- * order of priority. The function evaluates in this order:
- * 1. (help-locales "") in the gimprc file
- * 2. the UI language from Preferences/Interface.
- * On OS X: If the user has set the UI language to 'System Language', then
- * the UI language from the OS X's System Preferences is returned.
- */
 static gchar *
 gimp_help_get_locales (Gimp *gimp)
 {
-  GimpGuiConfig *config = GIMP_GUI_CONFIG(gimp->config);
+  GimpGuiConfig *config = GIMP_GUI_CONFIG (gimp->config);
 
-#ifdef PLATFORM_OSX
-  NSAutoreleasePool *pool;
-  NSUserDefaults *defaults;
-  NSArray *langArray;
-  NSString *languagesList;
-  gchar *languages = NULL;
-#endif
-
-  /* First check for preferred help locales in gimprc. */
   if (config->help_locales && strlen (config->help_locales))
     return g_strdup (config->help_locales);
 
-  /* If no help locale is preferred, use the locale from Preferences/Interface*/
-#ifdef PLATFORM_OSX
-  /* If GIMP's preferred locale is set to 'System language', then
-   * g_get_language_names()[0] is 'C' and we have to get the value from
-   * the OS X System Preferences.
-   */
-  if (!strcmp(g_get_language_names()[0],"C"))
-    {
-      pool = [[NSAutoreleasePool alloc] init];
-
-      defaults = [NSUserDefaults standardUserDefaults];
-      langArray = [defaults stringArrayForKey: @"AppleLanguages"];
-      /* Although we only need the first entry, get them all. */
-      languagesList = [langArray componentsJoinedByString: @":"];
-
-      /* Translate them from Mac OS X (new UNIX style) to old UNIX style.*/
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"az-Latn"
-       withString: @"az"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"ga-dots"
-       withString: @"ga"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"mn-Cyrl"
-       withString: @"mn"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"ms-Latn"
-       withString: @"ms"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"tg-Cyrl"
-       withString: @"tz"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"tt-Cyrl"
-       withString: @"tt"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"zh-Hans"
-       withString: @"zh_CN"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"zh-Hant"
-       withString: @"zh_TW"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"Arab"
-       withString: @"arabic"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"Cyrl"
-       withString: @"cyrillic"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"Mong"
-       withString: @"mongolian"];
-
-       languagesList = [languagesList
-       stringByReplacingOccurrencesOfString: @"-"
-       withString: @"_"];
-
-       /* Ensure that the default language 'en' is there. */
-      languagesList = [languagesList stringByAppendingString: @":en"];
-
-      languages = g_strdup ([languagesList UTF8String]);
-
-      [pool drain];
-      return languages;
-    }
-  else
   return g_strjoinv (":", (gchar **) g_get_language_names ());
-#else
-  return g_strjoinv (":", (gchar **) g_get_language_names ());
-#endif
-
 }
 
 static gchar *

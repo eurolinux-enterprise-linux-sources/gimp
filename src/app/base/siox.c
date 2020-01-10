@@ -190,9 +190,6 @@ stageone (lab          *points,
   const gint curdim = depth % dims;
   gfloat     min, max;
   gfloat     curval;
-  gfloat     l = 0;
-  gfloat     a = 0;
-  gfloat     b = 0;
   gint       i;
 
   min = CURRENT_VALUE (points, left, curdim);
@@ -212,54 +209,54 @@ stageone (lab          *points,
   if (max - min > limits[curdim])
     {
       const gfloat pivot = (min + max) / 2.0;
+      gint         l     = left;
+      gint         r     = right - 1;
+      lab          tmp;
 
-      if (pivot != max)
+      while (TRUE)
         {
-          gint l = left;
-          gint r = right - 1;
-          lab  tmp;
+          while (CURRENT_VALUE (points, l, curdim) <= pivot)
+            ++l;
 
-          while (TRUE)
-            {
-              while (CURRENT_VALUE (points, l, curdim) <= pivot)
-                ++l;
+          while (CURRENT_VALUE (points, r, curdim) > pivot)
+            --r;
 
-              while (CURRENT_VALUE (points, r, curdim) > pivot)
-                --r;
+          if (l > r)
+            break;
 
-              if (l > r)
-                break;
+          tmp = points[l];
+          points[l] = points[r];
+          points[r] = tmp;
 
-              tmp = points[l];
-              points[l] = points[r];
-              points[r] = tmp;
-
-              ++l;
-              --r;
-            }
-
-          /* create subtrees */
-          stageone (points, left, l, depth + 1, clusters, limits, dims);
-          stageone (points, l, right, depth + 1, clusters, limits, dims);
-
-          return;
+          ++l;
+          --r;
         }
+
+      /* create subtrees */
+      stageone (points, left, l, depth + 1, clusters, limits, dims);
+      stageone (points, l, right, depth + 1, clusters, limits, dims);
     }
-
-  /* create leave */
-  points[*clusters].cardinality = right - left;
-
-  for (; left < right; ++left)
+  else
     {
-      l += points[left].l;
-      a += points[left].a;
-      b += points[left].b;
-    }
+      /* create leave */
+      gfloat  l = 0;
+      gfloat  a = 0;
+      gfloat  b = 0;
 
-  points[*clusters].l = l / points[*clusters].cardinality;
-  points[*clusters].a = a / points[*clusters].cardinality;
-  points[*clusters].b = b / points[*clusters].cardinality;
-  ++(*clusters);
+      points[*clusters].cardinality = right - left;
+
+      for (; left < right; ++left)
+        {
+          l += points[left].l;
+          a += points[left].a;
+          b += points[left].b;
+        }
+
+      points[*clusters].l = l / points[*clusters].cardinality;
+      points[*clusters].a = a / points[*clusters].cardinality;
+      points[*clusters].b = b / points[*clusters].cardinality;
+      ++(*clusters);
+    }
 }
 
 
@@ -281,7 +278,7 @@ stagetwo (lab           *points,
   const gint curdim = depth % dims;
   gfloat     min, max;
   gfloat     curval;
-  gint       i, sum = 0;
+  gint       i;
 
   min = CURRENT_VALUE (points, left, curdim);
   max = min;
@@ -300,66 +297,64 @@ stagetwo (lab           *points,
   if (max - min > limits[curdim])
     {
       const gfloat pivot = (min + max) / 2.0;
+      gint         l     = left;
+      gint         r     = right - 1;
+      lab          tmp;
 
-      if (pivot != max)
+      while (TRUE)
         {
-          gint l = left;
-          gint r = right - 1;
-          lab  tmp;
+          while (CURRENT_VALUE (points, l, curdim) <= pivot)
+            ++l;
 
-          while (TRUE)
+          while (CURRENT_VALUE (points, r, curdim) > pivot)
+            --r;
+
+          if (l > r)
+            break;
+
+          tmp = points[l];
+          points[l] = points[r];
+          points[r] = tmp;
+
+          ++l;
+          --r;
+        }
+
+      /* create subtrees */
+      stagetwo (points, left, l, depth + 1, clusters, limits, threshold, dims);
+      stagetwo (points, l, right, depth + 1, clusters, limits, threshold, dims);
+    }
+  else /* create leave */
+    {
+      gint sum = 0;
+
+      for (i = left; i < right; i++)
+        sum += points[i].cardinality;
+
+      if (sum >= threshold)
+        {
+          const gint c = right - left;
+          gfloat     l = 0;
+          gfloat     a = 0;
+          gfloat     b = 0;
+
+          for (; left < right; ++left)
             {
-              while (CURRENT_VALUE (points, l, curdim) <= pivot)
-                ++l;
-
-              while (CURRENT_VALUE (points, r, curdim) > pivot)
-                --r;
-
-              if (l > r)
-                break;
-
-              tmp = points[l];
-              points[l] = points[r];
-              points[r] = tmp;
-
-              ++l;
-              --r;
+              l += points[left].l;
+              a += points[left].a;
+              b += points[left].b;
             }
 
-          /* create subtrees */
-          stagetwo (points, left, l, depth + 1, clusters, limits, threshold, dims);
-          stagetwo (points, l, right, depth + 1, clusters, limits, threshold, dims);
-
-          return;
-        }
-    }
-
-  for (i = left; i < right; i++)
-    sum += points[i].cardinality;
-
-  if (sum >= threshold)
-    {
-      const gint c = right - left;
-      gfloat     l = 0;
-      gfloat     a = 0;
-      gfloat     b = 0;
-
-      for (; left < right; ++left)
-        {
-          l += points[left].l;
-          a += points[left].a;
-          b += points[left].b;
-        }
-
-      points[*clusters].l = l / c;
-      points[*clusters].a = a / c;
-      points[*clusters].b = b / c;
-      ++(*clusters);
+          points[*clusters].l = l / c;
+          points[*clusters].a = a / c;
+          points[*clusters].b = b / c;
+          ++(*clusters);
 
 #ifdef SIOX_DEBUG
-      g_printerr ("siox.c: cluster=%f, %f, %f sum=%d\n",
-                  l, a, b, sum);
+          g_printerr ("siox.c: cluster=%f, %f, %f sum=%d\n",
+                     l, a, b, sum);
 #endif
+        }
     }
 }
 

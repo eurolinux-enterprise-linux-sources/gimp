@@ -113,8 +113,7 @@ static gboolean  save_image             (const gchar  *filename,
                                          GError      **error);
 
 static gboolean  save_dialog            (gboolean      has_alpha,
-                                         gboolean      is_monochrome,
-                                         gboolean      is_indexed);
+                                         gboolean      is_monochrome);
 
 static void      comment_entry_callback (GtkWidget    *widget,
                                          gpointer      data);
@@ -253,13 +252,11 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image, &drawable, "TIFF",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB     |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY    |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED |
-                                      GIMP_EXPORT_CAN_HANDLE_ALPHA);
-
+          export = gimp_export_image (&image, &drawable, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED |
+                                       GIMP_EXPORT_CAN_HANDLE_ALPHA ));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -289,19 +286,14 @@ run (const gchar      *name,
             {
               const TiffSaveVals *pvals = gimp_parasite_data (parasite);
 
-              if (pvals->compression == COMPRESSION_DEFLATE)
-                tsvals.compression = COMPRESSION_ADOBE_DEFLATE;
-              else
-                tsvals.compression = pvals->compression;
-
+              tsvals.compression        = pvals->compression;
               tsvals.save_transp_pixels = pvals->save_transp_pixels;
             }
           gimp_parasite_free (parasite);
 
           /*  First acquire information with a dialog  */
           if (! save_dialog (gimp_drawable_has_alpha (drawable),
-                             image_is_monochrome (image),
-                             gimp_image_base_type (image) == GIMP_INDEXED))
+                             image_is_monochrome (image)))
             status = GIMP_PDB_CANCEL;
           break;
 
@@ -707,6 +699,17 @@ save_image (const gchar  *filename,
   tile_height = gimp_tile_height ();
   rowsperstrip = tile_height;
 
+  tif = tiff_open (filename, "w", error);
+
+  if (! tif)
+    {
+      if (! error)
+        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno),
+                     _("Could not open '%s' for writing: %s"),
+                     gimp_filename_to_utf8 (filename), g_strerror (errno));
+      return FALSE;
+    }
+
   TIFFSetWarningHandler (tiff_warning);
   TIFFSetErrorHandler (tiff_error);
 
@@ -813,35 +816,9 @@ save_image (const gchar  *filename,
     {
       if (bitspersample != 1 || samplesperpixel != 1)
         {
-          const gchar *msg = _("Only monochrome pictures can be compressed "
-                               "with \"CCITT Group 4\" or \"CCITT Group 3\".");
-
-          g_set_error_literal (error, G_FILE_ERROR, G_FILE_ERROR_FAILED, msg);
-
+          g_message ("Only monochrome pictures can be compressed with \"CCITT Group 4\" or \"CCITT Group 3\".");
           return FALSE;
         }
-    }
-
-  if (compression == COMPRESSION_JPEG)
-    {
-      if (gimp_image_base_type (image) == GIMP_INDEXED)
-        {
-          g_set_error_literal (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                               _("Indexed pictures cannot be compressed "
-                                 "with \"JPEG\"."));
-          return FALSE;
-        }
-    }
-
-  tif = tiff_open (filename, "w", error);
-
-  if (! tif)
-    {
-      if (! error)
-        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno),
-                     _("Could not open '%s' for writing: %s"),
-                     gimp_filename_to_utf8 (filename), g_strerror (errno));
-      return FALSE;
     }
 
   /* Set TIFF parameters. */
@@ -1090,8 +1067,7 @@ save_image (const gchar  *filename,
 
 static gboolean
 save_dialog (gboolean has_alpha,
-             gboolean is_monochrome,
-             gboolean is_indexed)
+             gboolean is_monochrome)
 {
   GtkWidget *dialog;
   GtkWidget *vbox;
@@ -1102,7 +1078,6 @@ save_dialog (gboolean has_alpha,
   GtkWidget *toggle;
   GtkWidget *g3;
   GtkWidget *g4;
-  GtkWidget *jpeg;
   gboolean   run;
 
   dialog = gimp_export_dialog_new (_("TIFF"), PLUG_IN_BINARY, SAVE_PROC);
@@ -1121,7 +1096,7 @@ save_dialog (gboolean has_alpha,
                                     _("_LZW"),       COMPRESSION_LZW,           NULL,
                                     _("_Pack Bits"), COMPRESSION_PACKBITS,      NULL,
                                     _("_Deflate"),   COMPRESSION_ADOBE_DEFLATE, NULL,
-                                    _("_JPEG"),      COMPRESSION_JPEG,          &jpeg,
+                                    _("_JPEG"),      COMPRESSION_JPEG,          NULL,
                                     _("CCITT Group _3 fax"), COMPRESSION_CCITTFAX3, &g3,
                                     _("CCITT Group _4 fax"), COMPRESSION_CCITTFAX4, &g4,
 
@@ -1129,7 +1104,6 @@ save_dialog (gboolean has_alpha,
 
   gtk_widget_set_sensitive (g3, is_monochrome);
   gtk_widget_set_sensitive (g4, is_monochrome);
-  gtk_widget_set_sensitive (jpeg, ! is_indexed);
 
   if (! is_monochrome)
     {
@@ -1139,12 +1113,6 @@ save_dialog (gboolean has_alpha,
           gimp_int_radio_group_set_active (GTK_RADIO_BUTTON (g3),
                                            COMPRESSION_NONE);
         }
-    }
-
-  if (is_indexed && tsvals.compression == COMPRESSION_JPEG)
-    {
-      gimp_int_radio_group_set_active (GTK_RADIO_BUTTON (jpeg),
-                                       COMPRESSION_NONE);
     }
 
   gtk_box_pack_start (GTK_BOX (vbox), frame, FALSE, FALSE, 0);

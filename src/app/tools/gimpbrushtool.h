@@ -53,7 +53,8 @@ GType            gimp_brush_tool_get_type       (void) G_GNUC_CONST;
 GimpCanvasItem * gimp_brush_tool_create_outline (GimpBrushTool *brush_tool,
                                                  GimpDisplay   *display,
                                                  gdouble        x,
-                                                 gdouble        y);
+                                                 gdouble        y,
+                                                 gboolean       draw_fallback);
 
 
 #endif  /*  __GIMP_BRUSH_TOOL_H__  */

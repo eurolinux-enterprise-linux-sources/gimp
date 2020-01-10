@@ -331,12 +331,11 @@ run (const gchar      *name,
         {
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
-          export = gimp_export_image (&image_ID, &drawable_ID, "TGA",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB     |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY    |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED |
-                                      GIMP_EXPORT_CAN_HANDLE_ALPHA);
-
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED |
+                                       GIMP_EXPORT_CAN_HANDLE_ALPHA ));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -773,7 +772,7 @@ flip_line (guchar   *buffer,
 
   alt = buffer + (info->bytes * (info->width - 1));
 
-  for (x = 0; x * 2 < info->width; x++)
+  for (x = 0; x * 2 <= info->width; x++)
     {
       for (s = 0; s < info->bytes; ++s)
         {
@@ -864,8 +863,7 @@ apply_colormap (guchar       *dest,
                 const guchar *src,
                 guint         width,
                 const guchar *cmap,
-                gboolean      alpha,
-                guint16       index)
+                gboolean      alpha)
 {
   guint x;
 
@@ -873,10 +871,10 @@ apply_colormap (guchar       *dest,
     {
       for (x = 0; x < width; x++)
         {
-          *(dest++) = cmap[(*src - index) * 4];
-          *(dest++) = cmap[(*src - index) * 4 + 1];
-          *(dest++) = cmap[(*src - index) * 4 + 2];
-          *(dest++) = cmap[(*src - index) * 4 + 3];
+          *(dest++) = cmap[*src * 4];
+          *(dest++) = cmap[*src * 4 + 1];
+          *(dest++) = cmap[*src * 4 + 2];
+          *(dest++) = cmap[*src * 4 + 3];
 
           src++;
         }
@@ -885,26 +883,12 @@ apply_colormap (guchar       *dest,
     {
       for (x = 0; x < width; x++)
         {
-          *(dest++) = cmap[(*src - index) * 3];
-          *(dest++) = cmap[(*src - index) * 3 + 1];
-          *(dest++) = cmap[(*src - index) * 3 + 2];
+          *(dest++) = cmap[*src * 3];
+          *(dest++) = cmap[*src * 3 + 1];
+          *(dest++) = cmap[*src * 3 + 2];
 
           src++;
         }
-    }
-}
-
-static void
-apply_index (guchar       *dest,
-             const guchar *src,
-             guint         width,
-             guint16       index)
-{
-  guint x;
-
-  for (x = 0; x < width; x++)
-    {
-      *(dest++) = *(src++) - index;
     }
 }
 
@@ -945,14 +929,7 @@ read_line (FILE         *fp,
     {
       gboolean has_alpha = (info->alphaBits > 0);
 
-      apply_colormap (row, buffer, info->width, convert_cmap, has_alpha,
-                      info->colorMapIndex);
-    }
-  else if (info->imageType == TGA_TYPE_MAPPED)
-    {
-      g_assert(drawable->bpp == 1);
-
-      apply_index (row, buffer, info->width, info->colorMapIndex);
+      apply_colormap (row, buffer, info->width, convert_cmap, has_alpha);
     }
   else
     {
@@ -995,7 +972,7 @@ ReadImage (FILE        *fp,
           dtype = GIMP_RGBA_IMAGE;
           convert_cmap = g_new (guchar, info->colorMapLength * 4);
         }
-      else if (info->colorMapIndex + info->colorMapLength > 256)
+      else if (info->colorMapLength > 256)
         {
           /* more than 256 colormap entries => promoted to RGB */
           itype = GIMP_RGB;

@@ -22,6 +22,8 @@
 gboolean   xcf_seek_pos (XcfInfo *info,
                          guint    pos,
                          GError **error);
+gboolean   xcf_seek_end (XcfInfo *info,
+                         GError **error);
 
 
 #endif  /* __XCF_SEEK_H__ */

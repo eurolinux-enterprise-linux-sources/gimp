@@ -237,12 +237,11 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image_ID, &drawable_ID, "CEL",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB   |
-                                      GIMP_EXPORT_CAN_HANDLE_ALPHA |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED);
-
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_ALPHA |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED
+                                       ));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -256,10 +255,7 @@ run (const gchar      *name,
       if (save_image (param[3].data.d_string, param[4].data.d_string,
                       image_ID, drawable_ID, &error))
         {
-	  if (data_length)
-	    {
-	      gimp_set_data (SAVE_PROC, palette_file, data_length);
-	    }
+          gimp_set_data (SAVE_PROC, palette_file, data_length);
         }
       else
         {

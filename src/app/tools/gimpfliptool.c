@@ -227,6 +227,10 @@ gimp_flip_tool_transform (GimpTransformTool *trans_tool,
       break;
     }
 
+  if (gimp_item_get_linked (active_item))
+    gimp_item_linked_flip (active_item, context, options->flip_type, axis,
+                           FALSE);
+
   if (orig_tiles)
     {
       /*  this happens when transforming a selection cut out of a
@@ -247,16 +251,7 @@ gimp_flip_tool_transform (GimpTransformTool *trans_tool,
     {
       /*  this happens for entire drawables, paths and layer groups  */
 
-      if (gimp_item_get_linked (active_item))
-        {
-          gimp_item_linked_flip (active_item, context,
-                                 options->flip_type, axis, FALSE);
-        }
-      else
-        {
-          gimp_item_flip (active_item, context,
-                          options->flip_type, axis, FALSE);
-        }
+      gimp_item_flip (active_item, context, options->flip_type, axis, FALSE);
     }
 
   return ret;

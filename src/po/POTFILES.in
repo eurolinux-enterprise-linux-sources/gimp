@@ -157,7 +157,6 @@ app/core/gimpimage.c
 app/core/gimpimagefile.c
 app/core/gimpitem.c
 app/core/gimpitem-exclusive.c
-app/core/gimpitem-linked.c
 app/core/gimplayer-floating-sel.c
 app/core/gimplayer.c
 app/core/gimplayermask.c
@@ -172,7 +171,6 @@ app/core/gimppdbprogress.c
 app/core/gimpprogress.c
 app/core/gimpselection.c
 app/core/gimpstrokeoptions.c
-app/core/gimptoolpreset-load.c
 app/core/gimptemplate.c
 app/core/gimptooloptions.c
 app/core/gimpunit.c
@@ -503,5 +501,4 @@ app/xcf/xcf.c
 
 data/tags/gimp-tags-default.xml.in
 
-desktop/gimp.appdata.xml.in
 desktop/gimp.desktop.in.in

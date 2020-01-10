@@ -180,7 +180,6 @@ do_zcrop (GimpDrawable *drawable,
   gint8        *killcols;
   gint32        livingrows, livingcols, destrow, destcol;
   gint          total_area, area;
-  gint32        selection_copy;
   gboolean      has_alpha;
 
   width  = drawable->width;
@@ -295,21 +294,13 @@ do_zcrop (GimpDrawable *drawable,
   g_free (killrows);
   g_free (killcols);
 
-  gimp_drawable_flush (drawable);
+  gimp_progress_update (1.00);
 
   gimp_image_undo_group_start (image_id);
 
-  selection_copy = gimp_selection_save (image_id);
-  gimp_selection_none (image_id);
-
+  gimp_drawable_flush (drawable);
   gimp_drawable_merge_shadow (drawable->drawable_id, TRUE);
-
-  gimp_image_select_item (image_id, GIMP_CHANNEL_OP_REPLACE, selection_copy);
-  gimp_image_remove_channel (image_id, selection_copy);
-
   gimp_image_crop (image_id, livingcols, livingrows, 0, 0);
 
   gimp_image_undo_group_end (image_id);
-
-  gimp_progress_update (1.00);
 }

@@ -239,12 +239,10 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image_ID, &drawable_ID, "GBR",
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY |
-                                      GIMP_EXPORT_CAN_HANDLE_RGB  |
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      GIMP_EXPORT_CAN_HANDLE_GRAY  |
+                                      GIMP_EXPORT_CAN_HANDLE_RGB   |
                                       GIMP_EXPORT_CAN_HANDLE_ALPHA);
-
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -782,7 +780,6 @@ save_dialog (void)
 
   spinbutton = gimp_spin_button_new (&adj,
                                      info.spacing, 1, 1000, 1, 10, 0, 1, 0);
-  gtk_entry_set_activates_default (GTK_ENTRY (spinbutton), TRUE);
   gimp_table_attach_aligned (GTK_TABLE (table), 0, 0,
                              _("Spacing:"), 1.0, 0.5,
                              spinbutton, 1, TRUE);
@@ -794,7 +791,6 @@ save_dialog (void)
   entry = gtk_entry_new ();
   gtk_widget_set_size_request (entry, 200, -1);
   gtk_entry_set_text (GTK_ENTRY (entry), info.description);
-  gtk_entry_set_activates_default (GTK_ENTRY (entry), TRUE);
   gimp_table_attach_aligned (GTK_TABLE (table), 0, 1,
                              _("Description:"), 1.0, 0.5,
                              entry, 1, FALSE);

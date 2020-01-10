@@ -35,7 +35,6 @@
        (theHeight (car (gimp-image-height inImage)))
        (theLayer 0)
        (theMode (car (gimp-image-base-type inImage)))
-       (prevLayer (car (gimp-image-get-active-layer inImage)))
        )
 
     (gimp-context-push)
@@ -92,8 +91,6 @@
       (gimp-image-set-active-channel theImage inDrawable)
       )
     (gimp-image-undo-group-end theImage)
-
-    (gimp-image-set-active-layer theImage prevLayer)
 
     (gimp-displays-flush)
     (gimp-context-pop)

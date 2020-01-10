@@ -16,5 +16,4 @@
  */
 
 gboolean print_draw_page (GtkPrintContext *context,
-                          PrintData       *data,
-                          GError         **error);
+                          PrintData       *data);

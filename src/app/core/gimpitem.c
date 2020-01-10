@@ -43,8 +43,6 @@
 #include "gimpprogress.h"
 #include "gimpstrokeoptions.h"
 
-#include "paint/gimppaintoptions.h"
-
 #include "gimp-intl.h"
 
 
@@ -1477,7 +1475,7 @@ gimp_item_stroke (GimpItem          *item,
                   GimpDrawable      *drawable,
                   GimpContext       *context,
                   GimpStrokeOptions *stroke_options,
-                  GimpPaintOptions  *paint_options,
+                  gboolean           use_default_values,
                   gboolean           push_undo,
                   GimpProgress      *progress,
                   GError           **error)
@@ -1491,8 +1489,6 @@ gimp_item_stroke (GimpItem          *item,
   g_return_val_if_fail (gimp_item_is_attached (GIMP_ITEM (drawable)), FALSE);
   g_return_val_if_fail (GIMP_IS_CONTEXT (context), FALSE);
   g_return_val_if_fail (GIMP_IS_STROKE_OPTIONS (stroke_options), FALSE);
-  g_return_val_if_fail (paint_options == NULL ||
-                        GIMP_IS_PAINT_OPTIONS (paint_options), FALSE);
   g_return_val_if_fail (progress == NULL || GIMP_IS_PROGRESS (progress), FALSE);
   g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -1502,7 +1498,7 @@ gimp_item_stroke (GimpItem          *item,
     {
       GimpImage *image = gimp_item_get_image (item);
 
-      gimp_stroke_options_prepare (stroke_options, context, paint_options);
+      gimp_stroke_options_prepare (stroke_options, context, use_default_values);
 
       if (push_undo)
         gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_PAINT,

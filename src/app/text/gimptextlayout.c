@@ -170,8 +170,7 @@ gimp_text_layout_new (GimpText  *text,
                               pango_units_from_double
                               (gimp_units_to_pixels (text->box_width,
                                                      text->box_unit,
-                                                     xres) -
-                               2 * layout->text->border));
+                                                     xres)));
       break;
     }
 

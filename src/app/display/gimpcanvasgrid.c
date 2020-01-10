@@ -194,28 +194,23 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
 {
   GimpCanvasGridPrivate *private = GET_PRIVATE (item);
   GimpImage             *image   = gimp_display_get_image (shell->display);
-  gdouble                xspacing, yspacing;
-  gdouble                xoffset, yoffset;
   gdouble                x, y;
   gdouble                dx1, dy1, dx2, dy2;
   gint                   x0, x1, x2, x3;
   gint                   y0, y1, y2, y3;
   gint                   x_real, y_real;
+  gdouble                x_offset, y_offset;
   gint                   width, height;
 
 #define CROSSHAIR 2
 
-  gimp_grid_get_spacing (private->grid, &xspacing, &yspacing);
-  gimp_grid_get_offset  (private->grid, &xoffset,  &yoffset);
-
-  g_return_if_fail (xspacing > 0.0 &&
-                    yspacing > 0.0);
+  g_return_if_fail (private->grid->xspacing > 0 && private->grid->yspacing > 0);
 
   /*  skip grid drawing when the space between grid lines starts
    *  disappearing, see bug #599267.
    */
-  if (xspacing * shell->scale_x < 2.0 ||
-      yspacing * shell->scale_y < 2.0)
+  if (private->grid->xspacing * shell->scale_x < 2.0 ||
+      private->grid->yspacing * shell->scale_y < 2.0)
     return;
 
   cairo_clip_extents (cr, &dx1, &dy1, &dx2, &dy2);
@@ -228,16 +223,18 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
   width  = gimp_image_get_width  (image);
   height = gimp_image_get_height (image);
 
-  while (xoffset > 0)
-    xoffset -= xspacing;
+  x_offset = private->grid->xoffset;
+  while (x_offset > 0)
+    x_offset -= private->grid->xspacing;
 
-  while (yoffset > 0)
-    yoffset -= yspacing;
+  y_offset = private->grid->yoffset;
+  while (y_offset > 0)
+    y_offset -= private->grid->yspacing;
 
   switch (private->grid->style)
     {
     case GIMP_GRID_DOTS:
-      for (x = xoffset; x <= width; x += xspacing)
+      for (x = x_offset; x <= width; x += private->grid->xspacing)
         {
           if (x < 0)
             continue;
@@ -247,7 +244,7 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
           if (x_real < x1 || x_real >= x2)
             continue;
 
-          for (y = yoffset; y <= height; y += yspacing)
+          for (y = y_offset; y <= height; y += private->grid->yspacing)
             {
               if (y < 0)
                 continue;
@@ -264,7 +261,7 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
       break;
 
     case GIMP_GRID_INTERSECTIONS:
-      for (x = xoffset; x <= width; x += xspacing)
+      for (x = x_offset; x <= width; x += private->grid->xspacing)
         {
           if (x < 0)
             continue;
@@ -274,7 +271,7 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
           if (x_real + CROSSHAIR < x1 || x_real - CROSSHAIR >= x2)
             continue;
 
-          for (y = yoffset; y <= height; y += yspacing)
+          for (y = y_offset; y <= height; y += private->grid->yspacing)
             {
               if (y < 0)
                 continue;
@@ -317,7 +314,7 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
       gimp_display_shell_transform_xy (shell, 0, 0, &x0, &y0);
       gimp_display_shell_transform_xy (shell, width, height, &x3, &y3);
 
-      for (x = xoffset; x < width; x += xspacing)
+      for (x = x_offset; x < width; x += private->grid->xspacing)
         {
           if (x < 0)
             continue;
@@ -331,7 +328,7 @@ gimp_canvas_grid_draw (GimpCanvasItem   *item,
             }
         }
 
-      for (y = yoffset; y < height; y += yspacing)
+      for (y = y_offset; y < height; y += private->grid->yspacing)
         {
           if (y < 0)
             continue;

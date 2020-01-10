@@ -172,9 +172,9 @@ run (const gchar      *name,
 
       gimp_ui_init (PLUG_IN_BINARY, FALSE);
 
-      export = gimp_export_image (&image_ID, &drawable_ID, "C Source",
-                                  GIMP_EXPORT_CAN_HANDLE_RGB |
-                                  GIMP_EXPORT_CAN_HANDLE_ALPHA);
+      export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                  (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                   GIMP_EXPORT_CAN_HANDLE_ALPHA ));
 
       if (export == GIMP_EXPORT_CANCEL)
         {
@@ -349,9 +349,9 @@ save_uchar (FILE   *fp,
           c = 2;
         }
     }
-  if (d < 33 || (d >= 48 && d <= 57)  || d > 126)
+  if (d < 33 || d > 126)
     {
-      fprintf (fp, "\\%03o", d);
+      fprintf (fp, "\\%o", d);
       c += 1 + 1 + (d > 7) + (d > 63);
       pad = d < 64;
 
@@ -599,7 +599,7 @@ save_image (Config  *config,
           fprintf (fp, "\\b");
         else if (*p == '\f')
           fprintf (fp, "\\f");
-        else if (( *p >= 32 && *p <= 47 ) || (*p >= 58 && *p <= 126))
+        else if (*p >= 32 && *p <= 126)
           fprintf (fp, "%c", *p);
         else
           fprintf (fp, "\\%03o", *p);

@@ -1,0 +1,423 @@
+From 6b545bc7153ba5ed9810ac55b59b00af2b1dd8e9 Mon Sep 17 00:00:00 2001
+From: Nils Philippsen <nils@redhat.com>
+Date: Fri, 8 Nov 2013 14:14:19 +0100
+Subject: [PATCH] patch: static-code-check
+
+Fix problems found during static code check (Coverity).
+
+Squashed commit of the following:
+
+commit 2effab4087246e4eb45f8132e88b23b57b92bb19
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Fri Nov 8 14:02:03 2013 +0100
+
+    file-bmp: don't close foreign FD in ReadImage()
+
+    (cherry picked from commit 4664c1f479e7768d08ed5198bed2251e6aa0464c)
+
+commit 8c8f939a7760e606191681003bc868f6aef721d3
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 12:28:28 2013 +0100
+
+    app: don't ignore return value
+
+    ...of gtk_widget_translate_coordinates()
+
+    (cherry picked from commit 391de600f1bd76aa21a3ec1ea4d349ef04cc160b)
+    (cherry picked from commit dc8bb4eecf43eadae1bc562def7569e59d6515b7)
+
+commit 867b74dda47c3662cc5cff42bc5d9e629b943a8b
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 12:18:25 2013 +0100
+
+    file-jpeg: fix operator precedence errors
+
+    (cf. commit a9376443d7a2530f4481be18ee96a0322dc01ae5)
+
+    (cherry picked from commit 6abd0f2438dd3b025b1224ab6a473615c17f3418)
+
+commit 1abe50e70b091638efaf3216face760ba2a82b01
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 12:12:55 2013 +0100
+
+    gimpcolorwheel: comment out ineffectual code
+
+    (cherry picked from commit 1bb379c3f5ffbaada8942e71d1c333b9fcf5580a)
+    (cherry picked from commit 8082363e9c887b9f31e43b7fc947e1867f9c087b)
+
+commit 8aaf557a4e72b2ec1b8ee8ea567faba378986659
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 11:58:24 2013 +0100
+
+    file-bmp: don't leak file pointer when erroring out
+
+    (cherry picked from commit 6467fbf65dd046ee71e210b664099234e03390b9)
+    (cherry picked from commit 5c2f97f9f274bc20eef4ffd55c28156c39254343)
+
+commit 199c4ba002af2ef3af3449114bafcf7acf119755
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 11:43:38 2013 +0100
+
+    color-selector-cmyk-lcms: avoid freeing uninitialized pointer
+
+    (cherry picked from commit c028580ae08ccf6408910ee6cf83d54308367f36)
+
+    Conflicts:
+    	modules/color-selector-cmyk.c
+
+    (cherry picked from commit d291de0949c13eb2195158f6fbf41da2afe46cb9)
+
+commit 4082c3184e542dbd4eb78f153d93b3988d69ca3c
+Author: Nils Philippsen <nils@redhat.com>
+Date:   Thu Nov 7 11:33:19 2013 +0100
+
+    lcms: avoid dereferencing null pointers
+
+    (cherry picked from commit d0f7e713bb4478f2da3a688abf89adfdc2a935ee)
+    (cherry picked from commit 92a0387adc5a0e78501f6151b1d52c4c96f684a8)
+---
+ app/widgets/gimpdeviceinfo-coords.c | 12 ++++++----
+ modules/color-selector-cmyk-lcms.c  |  2 +-
+ modules/gimpcolorwheel.c            |  2 +-
+ plug-ins/common/lcms.c              | 15 ++++++++----
+ plug-ins/file-bmp/bmp-read.c        | 48 +++++++++++++++++++------------------
+ plug-ins/file-jpeg/jpeg-load.c      | 12 +++++-----
+ 6 files changed, 50 insertions(+), 41 deletions(-)
+
+diff --git a/app/widgets/gimpdeviceinfo-coords.c b/app/widgets/gimpdeviceinfo-coords.c
+index 0b72a2b..f6b74ca 100644
+--- a/app/widgets/gimpdeviceinfo-coords.c
++++ b/app/widgets/gimpdeviceinfo-coords.c
+@@ -62,11 +62,13 @@ gimp_device_info_get_event_coords (GimpDeviceInfo *info,
+               gint offset_x;
+               gint offset_y;
+ 
+-              gtk_widget_translate_coordinates (src_widget, dest_widget,
+-                                                0, 0, &offset_x, &offset_y);
+-
+-              coords->x += offset_x;
+-              coords->y += offset_y;
++              if (gtk_widget_translate_coordinates (src_widget, dest_widget,
++                                                    0, 0,
++                                                    &offset_x, &offset_y))
++                {
++                  coords->x += offset_x;
++                  coords->y += offset_y;
++                }
+             }
+         }
+ 
+diff --git a/modules/color-selector-cmyk-lcms.c b/modules/color-selector-cmyk-lcms.c
+index c668c3e..89c7d30 100644
+--- a/modules/color-selector-cmyk-lcms.c
++++ b/modules/color-selector-cmyk-lcms.c
+@@ -405,7 +405,7 @@ colorsel_cmyk_config_changed (ColorselCmyk *module)
+   cmsHPROFILE        rgb_profile;
+   cmsHPROFILE        cmyk_profile;
+ #ifdef HAVE_LCMS2
+-  gchar             *descData;
++  gchar             *descData = NULL;
+ #endif
+   const gchar       *name     = NULL;
+   gchar             *text;
+diff --git a/modules/gimpcolorwheel.c b/modules/gimpcolorwheel.c
+index 8de1085..56642fd 100644
+--- a/modules/gimpcolorwheel.c
++++ b/modules/gimpcolorwheel.c
+@@ -364,7 +364,7 @@ hsv_to_rgb (gdouble *h,
+     {
+       *h = *v;
+       *s = *v;
+-      *v = *v; /* heh */
++   /* *v = *v; -- heh */
+     }
+   else
+     {
+diff --git a/plug-ins/common/lcms.c b/plug-ins/common/lcms.c
+index 87373fc..5974aaa 100644
+--- a/plug-ins/common/lcms.c
++++ b/plug-ins/common/lcms.c
+@@ -363,10 +363,12 @@ run (const gchar      *name,
+     goto done;
+ 
+   if (proc != PROC_FILE_INFO)
+-    config = gimp_get_color_configuration ();
+-
+-  if (config)
+-    intent = config->display_intent;
++    {
++      config = gimp_get_color_configuration ();
++      /* Later code relies on config != NULL if proc != PROC_FILE_INFO */
++      g_return_if_fail (config != NULL);
++      intent = config->display_intent;
++    }
+   else
+     intent = GIMP_COLOR_RENDERING_INTENT_PERCEPTUAL;
+ 
+@@ -1386,7 +1388,10 @@ lcms_icc_apply_dialog (gint32       image,
+ 
+   run = (gimp_dialog_run (GIMP_DIALOG (dialog)) == GTK_RESPONSE_OK);
+ 
+-  *dont_ask = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (toggle));
++  if (dont_ask)
++    {
++      *dont_ask = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (toggle));
++    }
+ 
+   gtk_widget_destroy (dialog);
+ 
+diff --git a/plug-ins/file-bmp/bmp-read.c b/plug-ins/file-bmp/bmp-read.c
+index 7e70fbd..e59dfb8 100644
+--- a/plug-ins/file-bmp/bmp-read.c
++++ b/plug-ins/file-bmp/bmp-read.c
+@@ -193,7 +193,7 @@ ReadBMP (const gchar  *name,
+   gint      ColormapSize, rowbytes, Maps;
+   gboolean  Grey = FALSE;
+   guchar    ColorMap[256][3];
+-  gint32    image_ID;
++  gint32    image_ID = -1;
+   gchar     magick[2];
+   Bitmap_Channel masks[4];
+ 
+@@ -205,7 +205,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno),
+                    _("Could not open '%s' for reading: %s"),
+                    gimp_filename_to_utf8 (filename), g_strerror (errno));
+-      return -1;
++      goto out;
+     }
+ 
+   gimp_progress_init_printf (_("Opening '%s'"),
+@@ -221,8 +221,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      fclose (fd);
+-      return -1;
++      goto out;
+     }
+ 
+   while (!strncmp (magick, "BA", 2))
+@@ -232,14 +231,14 @@ ReadBMP (const gchar  *name,
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("'%s' is not a valid BMP file"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+       if (!ReadOK (fd, magick, 2))
+         {
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("'%s' is not a valid BMP file"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+     }
+ 
+@@ -248,7 +247,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* bring them to the right byteorder. Not too nice, but it should work */
+@@ -263,7 +262,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   Bitmap_File_Head.biSize    = ToL (&buffer[0x00]);
+@@ -277,7 +276,7 @@ ReadBMP (const gchar  *name,
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("Error reading BMP file header from '%s'"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+ 
+       Bitmap_Head.biWidth   = ToS (&buffer[0x00]);       /* 12 */
+@@ -304,7 +303,7 @@ ReadBMP (const gchar  *name,
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("Error reading BMP file header from '%s'"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+ 
+       Bitmap_Head.biWidth   = ToL (&buffer[0x00]);      /* 12 */
+@@ -332,7 +331,7 @@ ReadBMP (const gchar  *name,
+               g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                            _("Error reading BMP file header from '%s'"),
+                            gimp_filename_to_utf8 (filename));
+-              return -1;
++              goto out;
+             }
+ 
+           Bitmap_Head.masks[0] = ToL(&buffer[0x00]);
+@@ -361,7 +360,7 @@ ReadBMP (const gchar  *name,
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("Error reading BMP file header from '%s'"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+ 
+       Bitmap_Head.biWidth   =ToL (&buffer[0x00]);       /* 12 */
+@@ -391,7 +390,7 @@ ReadBMP (const gchar  *name,
+           g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                        _("Error reading BMP file header from '%s'"),
+                        gimp_filename_to_utf8 (filename));
+-          return -1;
++          goto out;
+         }
+ 
+       Bitmap_Head.biWidth   = ToL (&buffer[0x00]);
+@@ -425,7 +424,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("Error reading BMP file header from '%s'"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* Valid bit depth is 1, 4, 8, 16, 24, 32 */
+@@ -445,7 +444,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* There should be some colors used! */
+@@ -466,7 +465,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* biHeight may be negative, but G_MININT32 is dangerous because:
+@@ -477,7 +476,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   if (Bitmap_Head.biPlanes != 1)
+@@ -485,7 +484,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   if (Bitmap_Head.biClrUsed > 256)
+@@ -493,7 +492,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* protect against integer overflows caused by malicious BMPs */
+@@ -505,7 +504,7 @@ ReadBMP (const gchar  *name,
+       g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                    _("'%s' is not a valid BMP file"),
+                    gimp_filename_to_utf8 (filename));
+-      return -1;
++      goto out;
+     }
+ 
+   /* Windows and OS/2 declare filler so that rows are a multiple of
+@@ -533,7 +532,7 @@ ReadBMP (const gchar  *name,
+ #endif
+       /* Get the Colormap */
+       if (!ReadColorMap (fd, ColorMap, ColormapSize, Maps, &Grey))
+-        return -1;
++        goto out;
+     }
+ 
+   fseek (fd, Bitmap_File_Head.bfOffs, SEEK_SET);
+@@ -552,7 +551,7 @@ ReadBMP (const gchar  *name,
+                         error);
+ 
+   if (image_ID < 0)
+-    return -1;
++    goto out;
+ 
+   if (Bitmap_Head.biXPels > 0 && Bitmap_Head.biYPels > 0)
+     {
+@@ -574,6 +573,10 @@ ReadBMP (const gchar  *name,
+   if (Bitmap_Head.biHeight < 0)
+     gimp_image_flip (image_ID, GIMP_ORIENTATION_VERTICAL);
+ 
++out:
++  if (fd)
++    fclose (fd);
++
+   return image_ID;
+ }
+ 
+@@ -917,7 +920,6 @@ ReadImage (FILE                  *fd,
+       break;
+     }
+ 
+-  fclose (fd);
+   if (bpp <= 8)
+     for (i = 0, j = 0; i < ncols; i++)
+       {
+diff --git a/plug-ins/file-jpeg/jpeg-load.c b/plug-ins/file-jpeg/jpeg-load.c
+index 3609029..4ae7eb2 100644
+--- a/plug-ins/file-jpeg/jpeg-load.c
++++ b/plug-ins/file-jpeg/jpeg-load.c
+@@ -982,9 +982,9 @@ jpeg_load_cmyk_transform (guint8 *profile_data,
+       if (cmyk_profile)
+         {
+ #ifdef HAVE_LCMS1
+-          if (! cmsGetColorSpace (cmyk_profile) == icSigCmykData)
++          if (cmsGetColorSpace (cmyk_profile) != icSigCmykData)
+ #else
+-          if (! cmsGetColorSpace (cmyk_profile) == cmsSigCmykData)
++          if (cmsGetColorSpace (cmyk_profile) != cmsSigCmykData)
+ #endif
+             {
+               cmsCloseProfile (cmyk_profile);
+@@ -999,9 +999,9 @@ jpeg_load_cmyk_transform (guint8 *profile_data,
+       cmyk_profile = cmsOpenProfileFromFile (config->cmyk_profile, "r");
+ 
+ #ifdef HAVE_LCMS1
+-      if (cmyk_profile && ! cmsGetColorSpace (cmyk_profile) == icSigCmykData)
++      if (cmyk_profile && cmsGetColorSpace (cmyk_profile) != icSigCmykData)
+ #else
+-      if (cmyk_profile && ! cmsGetColorSpace (cmyk_profile) == cmsSigCmykData)
++      if (cmyk_profile && cmsGetColorSpace (cmyk_profile) != cmsSigCmykData)
+ #endif
+         {
+           cmsCloseProfile (cmyk_profile);
+@@ -1022,9 +1022,9 @@ jpeg_load_cmyk_transform (guint8 *profile_data,
+       rgb_profile = cmsOpenProfileFromFile (config->rgb_profile, "r");
+ 
+ #ifdef HAVE_LCMS1
+-      if (rgb_profile && ! cmsGetColorSpace (rgb_profile) == icSigRgbData)
++      if (rgb_profile && cmsGetColorSpace (rgb_profile) != icSigRgbData)
+ #else
+-      if (rgb_profile && ! cmsGetColorSpace (rgb_profile) == cmsSigRgbData)
++      if (rgb_profile && cmsGetColorSpace (rgb_profile) != cmsSigRgbData)
+ #endif
+         {
+           cmsCloseProfile (rgb_profile);
+-- 
+1.8.4.2
+

@@ -47,7 +47,7 @@ typedef struct _GimpDisplayShellClass  GimpDisplayShellClass;
 
 struct _GimpDisplayShell
 {
-  GtkEventBox        parent_instance;
+  GtkBox             parent_instance;
 
   GimpDisplay       *display;
 
@@ -175,8 +175,6 @@ struct _GimpDisplayShell
   gboolean           keyboard_grabbed;
   guint32            keyboard_grab_time;
 
-  gboolean           inferior_ignore_mode;
-
   gboolean           space_pressed;
   gboolean           space_release_pending;
   const gchar       *space_shaded_tool;
@@ -196,7 +194,7 @@ struct _GimpDisplayShell
 
 struct _GimpDisplayShellClass
 {
-  GtkEventBoxClass  parent_class;
+  GtkBoxClass  parent_class;
 
   void (* scaled)    (GimpDisplayShell *shell);
   void (* scrolled)  (GimpDisplayShell *shell);

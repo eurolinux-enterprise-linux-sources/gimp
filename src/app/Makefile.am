@@ -90,13 +90,11 @@ gimp_2_8_SOURCES = $(libapp_sources) main.c
 
 
 if PLATFORM_OSX
-framework_cocoa = -framework Cocoa
+framework_carbon = -framework Carbon
 endif
 
 if OS_WIN32
 win32_ldflags = -mwindows -Wl,--tsaware $(WIN32_LARGE_ADDRESS_AWARE)
-else
-libm = -lm
 endif
 
 if USE_BINRELOC
@@ -183,27 +181,25 @@ gimpconsoleldadd = \
 	$(GEGL_LIBS)			\
 	$(GLIB_LIBS)			\
 	$(INTLLIBS)			\
-	$(RT_LIBS)			\
-	$(libm)
+	$(RT_LIBS)
 
 gimp_2_8_LDFLAGS = \
 	$(AM_LDFLAGS)		\
 	$(win32_ldflags)	\
-	$(framework_cocoa)
+	$(framework_carbon)
 
 gimp_2_8_LDADD = \
-	gui/libappgui.a			\
-	menus/libappmenus.a		\
-	actions/libappactions.a		\
-	dialogs/libappdialogs.a		\
-	tools/libapptools.a		\
-	display/libappdisplay.a		\
-	widgets/libappwidgets.a		\
-	$(libgimpwidgets)		\
-	$(GTK_LIBS)			\
-	$(GTK_MAC_INTEGRATION_LIBS)	\
-	$(DBUS_GLIB_LIBS)		\
-	$(gimpconsoleldadd)		\
+	gui/libappgui.a		\
+	menus/libappmenus.a	\
+	actions/libappactions.a	\
+	dialogs/libappdialogs.a	\
+	tools/libapptools.a	\
+	display/libappdisplay.a	\
+	widgets/libappwidgets.a	\
+	$(libgimpwidgets)	\
+	$(GTK_LIBS)		\
+	$(DBUS_GLIB_LIBS)	\
+	$(gimpconsoleldadd)	\
 	$(GIMPRC)
 
 

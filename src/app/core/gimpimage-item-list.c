@@ -46,7 +46,7 @@ gimp_image_item_list_translate (GimpImage *image,
     {
       GList *l;
 
-      if (push_undo && list->next)
+      if (push_undo)
         gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_ITEM_DISPLACE,
                                      C_("undo-type", "Translate Items"));
 
@@ -54,7 +54,7 @@ gimp_image_item_list_translate (GimpImage *image,
         gimp_item_translate (GIMP_ITEM (l->data),
                              offset_x, offset_y, push_undo);
 
-      if (push_undo && list->next)
+      if (push_undo)
         gimp_image_undo_group_end (image);
     }
 }
@@ -74,16 +74,14 @@ gimp_image_item_list_flip (GimpImage           *image,
     {
       GList *l;
 
-      if (list->next)
-        gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
-                                     C_("undo-type", "Flip Items"));
+      gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
+                                   C_("undo-type", "Flip Items"));
 
       for (l = list; l; l = g_list_next (l))
         gimp_item_flip (GIMP_ITEM (l->data), context,
                         flip_type, axis, clip_result);
 
-      if (list->next)
-        gimp_image_undo_group_end (image);
+      gimp_image_undo_group_end (image);
     }
 }
 
@@ -103,16 +101,14 @@ gimp_image_item_list_rotate (GimpImage        *image,
     {
       GList *l;
 
-      if (list->next)
-        gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
-                                     C_("undo-type", "Rotate Items"));
+      gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
+                                   C_("undo-type", "Rotate Items"));
 
       for (l = list; l; l = g_list_next (l))
         gimp_item_rotate (GIMP_ITEM (l->data), context,
                           rotate_type, center_x, center_y, clip_result);
 
-      if (list->next)
-        gimp_image_undo_group_end (image);
+      gimp_image_undo_group_end (image);
     }
 }
 
@@ -135,9 +131,8 @@ gimp_image_item_list_transform (GimpImage              *image,
     {
       GList *l;
 
-      if (list->next)
-        gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
-                                     C_("undo-type", "Transform Items"));
+      gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_TRANSFORM,
+                                   C_("undo-type", "Transform Items"));
 
       for (l = list; l; l = g_list_next (l))
         gimp_item_transform (GIMP_ITEM (l->data), context,
@@ -145,24 +140,25 @@ gimp_image_item_list_transform (GimpImage              *image,
                              interpolation_type, recursion_level,
                              clip_result, progress);
 
-      if (list->next)
-        gimp_image_undo_group_end (image);
+      gimp_image_undo_group_end (image);
     }
 }
 
 /**
  * gimp_image_item_list_get_list:
  * @image:   An @image.
+ * @exclude: An item to exclude.
  * @type:    Which type of items to return.
  * @set:     Set the returned items are part of.
  *
  * This function returns a #GList of #GimpItem<!-- -->s for which the
  * @type and @set criterions match.
  *
- * Return value: The list of items.
+ * Return value: The list of items, excluding @exclude.
  **/
 GList *
 gimp_image_item_list_get_list (const GimpImage  *image,
+                               const GimpItem   *exclude,
                                GimpItemTypeMask  type,
                                GimpItemSet       set)
 {
@@ -171,6 +167,7 @@ gimp_image_item_list_get_list (const GimpImage  *image,
   GList *return_list = NULL;
 
   g_return_val_if_fail (GIMP_IS_IMAGE (image), NULL);
+  g_return_val_if_fail (exclude == NULL || GIMP_IS_ITEM (exclude), NULL);
 
   if (type & GIMP_ITEM_TYPE_LAYERS)
     {
@@ -180,7 +177,7 @@ gimp_image_item_list_get_list (const GimpImage  *image,
         {
           GimpItem *item = list->data;
 
-          if (gimp_item_is_in_set (item, set))
+          if (item != exclude && gimp_item_is_in_set (item, set))
             return_list = g_list_prepend (return_list, item);
         }
 
@@ -195,7 +192,7 @@ gimp_image_item_list_get_list (const GimpImage  *image,
         {
           GimpItem *item = list->data;
 
-          if (gimp_item_is_in_set (item, set))
+          if (item != exclude && gimp_item_is_in_set (item, set))
             return_list = g_list_prepend (return_list, item);
         }
 
@@ -210,7 +207,7 @@ gimp_image_item_list_get_list (const GimpImage  *image,
         {
           GimpItem *item = list->data;
 
-          if (gimp_item_is_in_set (item, set))
+          if (item != exclude && gimp_item_is_in_set (item, set))
             return_list = g_list_prepend (return_list, item);
         }
 
@@ -243,23 +240,49 @@ gimp_image_item_list_remove_children (GList          *list,
 }
 
 GList *
-gimp_image_item_list_filter (GList *list)
+gimp_image_item_list_filter (const GimpItem *exclude,
+                             GList          *list,
+                             gboolean        remove_children,
+                             gboolean        remove_locked)
 {
   GList *l;
+
+  g_return_val_if_fail (exclude == NULL || GIMP_IS_ITEM (exclude), NULL);
 
   if (! list)
     return NULL;
 
-  for (l = list; l; l = g_list_next (l))
+  if (remove_children)
     {
-      GimpItem *item = l->data;
-      GList    *next;
+      if (exclude)
+        list = gimp_image_item_list_remove_children (list, exclude);
 
-      next = gimp_image_item_list_remove_children (g_list_next (l), item);
+      for (l = list; l; l = g_list_next (l))
+        {
+          GimpItem *item = l->data;
+          GList    *next;
 
-      l->next = next;
-      if (next)
-        next->prev = l;
+          next = gimp_image_item_list_remove_children (g_list_next (l), item);
+
+          l->next = next;
+          if (next)
+            next->prev = l;
+        }
+    }
+
+  if (remove_locked)
+    {
+      l = list;
+
+      while (l)
+        {
+          GimpItem *item = l->data;
+
+          l = g_list_next (l);
+
+          if (gimp_item_is_content_locked (item))
+            list = g_list_remove (list, item);
+        }
     }
 
   return list;

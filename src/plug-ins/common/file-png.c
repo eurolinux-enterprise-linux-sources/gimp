@@ -450,12 +450,11 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image_ID, &drawable_ID, "PNG",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB     |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY    |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED |
-                                      GIMP_EXPORT_CAN_HANDLE_ALPHA);
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED |
+                                       GIMP_EXPORT_CAN_HANDLE_ALPHA));
 
           if (export == GIMP_EXPORT_CANCEL)
             {
@@ -745,11 +744,6 @@ load_image (const gchar  *filename,
       return image;
     }
 
-#ifdef PNG_BENIGN_ERRORS_SUPPORTED
-  /* Change some libpng errors to warnings (e.g. bug 721135) */
-  png_set_benign_errors (pp, TRUE);
-#endif
-
   /*
    * Open the file and initialize the PNG read "engine"...
    */
@@ -765,7 +759,6 @@ load_image (const gchar  *filename,
     }
 
   png_init_io (pp, fp);
-  png_set_compression_buffer_size (pp, 512);
 
   gimp_progress_init_printf (_("Opening '%s'"),
                              gimp_filename_to_utf8 (filename));
@@ -1353,11 +1346,6 @@ save_image (const gchar  *filename,
                    gimp_filename_to_utf8 (filename));
       return FALSE;
     }
-
-#ifdef PNG_BENIGN_ERRORS_SUPPORTED
-  /* Change some libpng errors to warnings (e.g. bug 721135) */
-  png_set_benign_errors (pp, TRUE);
-#endif
 
   /*
    * Open the file and initialize the PNG write "engine"...

@@ -77,8 +77,7 @@ gimp_display_is_valid (gint32 display_ID)
  * has a display, another is added. Multiple displays are handled
  * transparently by GIMP. The newly created display is returned and can
  * be subsequently destroyed with a call to gimp_display_delete(). This
- * procedure only makes sense for use with the GIMP UI, and will result
- * in an execution error if called when GIMP has no UI.
+ * procedure only makes sense for use with the GIMP UI.
  *
  * Returns: The new display.
  **/

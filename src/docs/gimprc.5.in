@@ -60,7 +60,7 @@ Sets how many processors GIMP should try to use simultaneously.  This is an
 integer value.
 
 .TP
-(tile-cache-size 1421926k)
+(tile-cache-size 2147483647)
 
 When the amount of pixel data exceeds this limit, GIMP will start to swap
 tiles to disk.  This is a lot slower but it makes it possible to work on
@@ -586,6 +586,12 @@ certain % character sequences are recognised and expanded as follows:
 .br
 
 .br
+
+.TP
+(confirm-on-close yes)
+
+Ask for confirmation before closing an image without saving.  Possible values
+are yes and no.
 
 .TP
 (monitor-xresolution 96.000000)

@@ -24,8 +24,8 @@
 #endif
 
 #ifdef GDK_WINDOWING_QUARTZ
-#import <AppKit/AppKit.h>
-#include <gtkosxapplication.h>
+#include <Carbon/Carbon.h>
+#include <sys/param.h>
 #endif
 
 #if HAVE_DBUS_GLIB
@@ -63,16 +63,11 @@ static HWND             proxy_window     = NULL;
 #endif
 
 #ifdef GDK_WINDOWING_QUARTZ
-static void gui_unique_quartz_init (Gimp *gimp);
-static void gui_unique_quartz_exit (void);
+static void  gui_unique_mac_init (Gimp *gimp);
+static void  gui_unique_mac_exit (void);
 
-@interface GimpAppleEventHandler : NSObject {}
-- (void) handleEvent:(NSAppleEventDescriptor *) inEvent
-        andReplyWith:(NSAppleEventDescriptor *) replyEvent;
-@end
-
-static Gimp                   *unique_gimp   = NULL;
-static GimpAppleEventHandler  *event_handler = NULL;
+static Gimp            *unique_gimp      = NULL;
+AEEventHandlerUPP       open_document_callback_proc;
 #endif
 
 
@@ -81,10 +76,12 @@ gui_unique_init (Gimp *gimp)
 {
 #ifdef G_OS_WIN32
   gui_unique_win32_init (gimp);
-#elif defined (GDK_WINDOWING_QUARTZ)
-  gui_unique_quartz_init (gimp);
-#elif defined (HAVE_DBUS_GLIB)
+#elif HAVE_DBUS_GLIB
   gui_dbus_service_init (gimp);
+#endif
+
+#ifdef GDK_WINDOWING_QUARTZ
+  gui_unique_mac_init (gimp);
 #endif
 }
 
@@ -93,10 +90,12 @@ gui_unique_exit (void)
 {
 #ifdef G_OS_WIN32
   gui_unique_win32_exit ();
-#elif defined (GDK_WINDOWING_QUARTZ)
-  gui_unique_quartz_exit ();
-#elif defined (HAVE_DBUS_GLIB)
+#elif HAVE_DBUS_GLIB
   gui_dbus_service_exit ();
+#endif
+
+#ifdef GDK_WINDOWING_QUARTZ
+  gui_unique_mac_exit ();
 #endif
 }
 
@@ -281,7 +280,7 @@ gui_unique_win32_exit (void)
 #ifdef GDK_WINDOWING_QUARTZ
 
 static gboolean
-gui_unique_quartz_idle_open (gchar *path)
+gui_unique_mac_idle_open (gchar *data)
 {
   /*  We want to be called again later in case that GIMP is not fully
    *  started yet.
@@ -289,126 +288,94 @@ gui_unique_quartz_idle_open (gchar *path)
   if (! gimp_is_restored (unique_gimp))
     return TRUE;
 
-  if (path)
+  if (data)
     {
-      file_open_from_command_line (unique_gimp, path, FALSE);
+      file_open_from_command_line (unique_gimp, data, FALSE);
     }
 
   return FALSE;
 }
 
-static gboolean
-gui_unique_quartz_nsopen_file_callback (GtkosxApplication *osx_app,
-                                        gchar             *path,
-                                        gpointer           user_data)
+/* Handle the kAEOpenDocuments Apple events. This will register
+ * an idle source callback for each filename in the event.
+ */
+static pascal OSErr
+gui_unique_mac_open_documents (const AppleEvent *inAppleEvent,
+                               AppleEvent       *outAppleEvent,
+                               long              handlerRefcon)
 {
-  gchar    *callback_path;
-  GSource  *source;
-  GClosure *closure;
+  OSStatus    status;
+  AEDescList  documents;
+  gchar       path[MAXPATHLEN];
 
-  callback_path = g_strdup (path);
-
-  closure = g_cclosure_new (G_CALLBACK (gui_unique_quartz_idle_open),
-                            (gpointer) callback_path,
-                            (GClosureNotify) g_free);
-
-  g_object_watch_closure (G_OBJECT (unique_gimp), closure);
-
-  source = g_idle_source_new ();
-
-  g_source_set_priority (source, G_PRIORITY_LOW);
-  g_source_set_closure (source, closure);
-  g_source_attach (source, NULL);
-  g_source_unref (source);
-
-  return TRUE;
-}
-
-@implementation GimpAppleEventHandler
-- (void) handleEvent: (NSAppleEventDescriptor *) inEvent
-        andReplyWith: (NSAppleEventDescriptor *) replyEvent
-{
-  const gchar       *path;
-  NSURL             *url;
-  NSAutoreleasePool *urlpool;
-  NSInteger          count;
-  NSInteger          i;
-
-  urlpool = [[NSAutoreleasePool alloc] init];
-
-  count = [inEvent numberOfItems];
-
-  for (i = 1; i <= count; i++)
+  status = AEGetParamDesc (inAppleEvent,
+                           keyDirectObject, typeAEList,
+                           &documents);
+  if (status == noErr)
     {
-      gchar    *callback_path;
-      GSource  *source;
-      GClosure *closure;
+      long count = 0;
+      int  i;
 
-      url = [NSURL URLWithString: [[inEvent descriptorAtIndex: i] stringValue]];
-      path = [[url path] UTF8String];
+      AECountItems (&documents, &count);
 
-      callback_path = g_strdup (path);
-      closure = g_cclosure_new (G_CALLBACK (gui_unique_quartz_idle_open),
-                                (gpointer) callback_path,
-                                (GClosureNotify) g_free);
+      for (i = 0; i < count; i++)
+        {
+          FSRef    ref;
+          gchar    *callback_path;
+          GSource  *source;
+          GClosure *closure;
 
-      g_object_watch_closure (G_OBJECT (unique_gimp), closure);
+          status = AEGetNthPtr (&documents, i + 1, typeFSRef,
+                                0, 0, &ref, sizeof (ref),
+                                0);
+          if (status != noErr)
+            continue;
 
-      source = g_idle_source_new ();
-      g_source_set_priority (source, G_PRIORITY_LOW);
-      g_source_set_closure (source, closure);
-      g_source_attach (source, NULL);
-      g_source_unref (source);
+          FSRefMakePath (&ref, (UInt8 *) path, MAXPATHLEN);
+
+          callback_path = g_strdup (path);
+
+          closure = g_cclosure_new (G_CALLBACK (gui_unique_mac_idle_open),
+                                    (gpointer) callback_path,
+                                    (GClosureNotify) g_free);
+
+          g_object_watch_closure (G_OBJECT (unique_gimp), closure);
+
+          source = g_idle_source_new ();
+          g_source_set_priority (source, G_PRIORITY_LOW);
+          g_source_set_closure (source, closure);
+          g_source_attach (source, NULL);
+          g_source_unref (source);
+        }
     }
 
-  [urlpool drain];
+    return status;
 }
-@end
 
 static void
-gui_unique_quartz_init (Gimp *gimp)
+gui_unique_mac_init (Gimp *gimp)
 {
-  GtkosxApplication *osx_app;
-
   g_return_if_fail (GIMP_IS_GIMP (gimp));
   g_return_if_fail (unique_gimp == NULL);
 
-  osx_app = gtkosx_application_get ();
-
   unique_gimp = gimp;
 
-  g_signal_connect (osx_app, "NSApplicationOpenFile",
-                    G_CALLBACK (gui_unique_quartz_nsopen_file_callback),
-                    gimp);
+  open_document_callback_proc = NewAEEventHandlerUPP(gui_unique_mac_open_documents);
 
-  /* Using the event handler is a hack, it is neccesary becuase
-   * gtkosx_application will drop the file open events if any
-   * event processing is done before gtkosx_application_ready is
-   * called, which we unfortuantly can't avoid doing right now.
-   */
-  event_handler = [[GimpAppleEventHandler alloc] init];
-
-  [[NSAppleEventManager sharedAppleEventManager]
-      setEventHandler: event_handler
-          andSelector: @selector (handleEvent: andReplyWith:)
-        forEventClass: kCoreEventClass
-           andEventID: kAEOpenDocuments];
+  AEInstallEventHandler (kCoreEventClass, kAEOpenDocuments,
+                         open_document_callback_proc,
+                         0L, TRUE);
 }
 
 static void
-gui_unique_quartz_exit (void)
+gui_unique_mac_exit (void)
 {
-  g_return_if_fail (GIMP_IS_GIMP (unique_gimp));
-
   unique_gimp = NULL;
 
-  [[NSAppleEventManager sharedAppleEventManager]
-      removeEventHandlerForEventClass: kCoreEventClass
-                           andEventID: kAEOpenDocuments];
+  AERemoveEventHandler (kCoreEventClass, kAEOpenDocuments,
+                        open_document_callback_proc, TRUE);
 
-  [event_handler release];
-
-  event_handler = NULL;
+  DisposeAEEventHandlerUPP(open_document_callback_proc);
 }
 
 #endif /* GDK_WINDOWING_QUARTZ */

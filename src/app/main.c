@@ -309,40 +309,6 @@ main (int    argc,
     if (p_SetDllDirectoryA)
       (*p_SetDllDirectoryA) ("");
   }
-
-  /* On Windows, set DLL search path to $INSTALLDIR/bin so that .exe
-     plug-ins in the plug-ins directory can find libgimp and file
-     library DLLs without needing to set external PATH. */
-  {
-    const gchar *install_dir;
-    gchar       *bin_dir;
-    LPWSTR       w_bin_dir;
-    int          n;
-
-    w_bin_dir = NULL;
-    install_dir = gimp_installation_directory ();
-    bin_dir = g_build_filename (install_dir, "bin", NULL);
-
-    n = MultiByteToWideChar (CP_UTF8, MB_ERR_INVALID_CHARS,
-                             bin_dir, -1, NULL, 0);
-    if (n == 0)
-      goto out;
-
-    w_bin_dir = g_malloc_n (n + 1, sizeof (wchar_t));
-    n = MultiByteToWideChar (CP_UTF8, MB_ERR_INVALID_CHARS,
-                             bin_dir, -1,
-                             w_bin_dir, (n + 1) * sizeof (wchar_t));
-    if (n == 0)
-      goto out;
-
-    SetDllDirectoryW (w_bin_dir);
-
-  out:
-    if (w_bin_dir)
-      g_free (w_bin_dir);
-    g_free (bin_dir);
-  }
-
 #ifndef _WIN64
   {
     typedef BOOL (WINAPI *t_SetProcessDEPPolicy) (DWORD dwFlags);
@@ -371,16 +337,6 @@ main (int    argc,
   gimp_init_i18n ();
 
   g_set_application_name (GIMP_NAME);
-
-#if GLIB_CHECK_VERSION (2, 39, 90)
-#ifdef G_OS_WIN32
-  argv = g_win32_get_command_line ();
-#else
-  argv = g_strdupv (argv);
-#endif
-#else
-  argv = g_strdupv (argv);
-#endif
 
   basename = g_path_get_basename (argv[0]);
   g_set_prgname (basename);
@@ -437,11 +393,7 @@ main (int    argc,
 
   app_libs_init (context, no_interface);
 
-#if GLIB_CHECK_VERSION (2, 39, 90)
-  if (! g_option_context_parse_strv (context, &argv, &error))
-#else
   if (! g_option_context_parse (context, &argc, &argv, &error))
-#endif
     {
       if (error)
         {
@@ -504,8 +456,6 @@ main (int    argc,
            use_debug_handler,
            stack_trace_mode,
            pdb_compat_mode);
-
-  g_strfreev (argv);
 
   g_option_context_free (context);
 

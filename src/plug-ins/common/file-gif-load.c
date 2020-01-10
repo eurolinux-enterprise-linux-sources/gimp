@@ -316,7 +316,7 @@ static gint     GetCode      (FILE        *fd,
 static gint     LZWReadByte  (FILE        *fd,
                               gint         just_reset_LZW,
                               gint         input_code_size);
-static gboolean ReadImage    (FILE        *fd,
+static gint32   ReadImage    (FILE        *fd,
                               const gchar *filename,
                               gint         len,
                               gint         height,
@@ -328,8 +328,7 @@ static gboolean ReadImage    (FILE        *fd,
                               guint        leftpos,
                               guint        toppos,
                               guint        screenwidth,
-                              guint        screenheight,
-                              gint32      *image_ID);
+                              guint        screenheight);
 
 
 static gint32
@@ -347,7 +346,6 @@ load_image (const gchar  *filename,
   gint      imageCount = 0;
   gchar     version[4];
   gint32    image_ID = -1;
-  gboolean  status;
 
   fd = g_fopen (filename, "rb");
 
@@ -470,34 +468,27 @@ load_image (const gchar  *filename,
               return image_ID; /* will be -1 if failed on first image! */
             }
 
-          status = ReadImage (fd, filename, LM_to_uint (buf[4], buf[5]),
-                              LM_to_uint (buf[6], buf[7]),
-                              localColorMap, bitPixel,
-                              grayScale,
-                              BitSet (buf[8], INTERLACE), imageCount,
-                              (guint) LM_to_uint (buf[0], buf[1]),
-                              (guint) LM_to_uint (buf[2], buf[3]),
-                              GifScreen.Width,
-                              GifScreen.Height,
-                              &image_ID);
+          image_ID = ReadImage (fd, filename, LM_to_uint (buf[4], buf[5]),
+                                LM_to_uint (buf[6], buf[7]),
+                                localColorMap, bitPixel,
+                                grayScale,
+                                BitSet (buf[8], INTERLACE), imageCount,
+                                (guint) LM_to_uint (buf[0], buf[1]),
+                                (guint) LM_to_uint (buf[2], buf[3]),
+                                GifScreen.Width,
+                                GifScreen.Height);
         }
       else
         {
-          status = ReadImage (fd, filename, LM_to_uint (buf[4], buf[5]),
-                              LM_to_uint (buf[6], buf[7]),
-                              GifScreen.ColorMap, GifScreen.BitPixel,
-                              GifScreen.GrayScale,
-                              BitSet (buf[8], INTERLACE), imageCount,
-                              (guint) LM_to_uint (buf[0], buf[1]),
-                              (guint) LM_to_uint (buf[2], buf[3]),
-                              GifScreen.Width,
-                              GifScreen.Height,
-                              &image_ID);
-        }
-
-      if (!status)
-        {
-          break;
+          image_ID = ReadImage (fd, filename, LM_to_uint (buf[4], buf[5]),
+                                LM_to_uint (buf[6], buf[7]),
+                                GifScreen.ColorMap, GifScreen.BitPixel,
+                                GifScreen.GrayScale,
+                                BitSet (buf[8], INTERLACE), imageCount,
+                                (guint) LM_to_uint (buf[0], buf[1]),
+                                (guint) LM_to_uint (buf[2], buf[3]),
+                                GifScreen.Width,
+                                GifScreen.Height);
         }
 
       if (comment_parasite != NULL)
@@ -664,7 +655,7 @@ GetDataBlock (FILE   *fd,
       return -1;
     }
 
-  ZeroDataBlock = (count == 0);
+  ZeroDataBlock = count == 0;
 
   if ((count != 0) && (! ReadOK (fd, buf, count)))
     {
@@ -706,15 +697,8 @@ GetCode (FILE     *fd,
       buf[0] = buf[last_byte - 2];
       buf[1] = buf[last_byte - 1];
 
-      count = GetDataBlock (fd, &buf[2]);
-      if (count < 0)
-        {
-          return -1;
-        }
-      else if (count == 0)
-        {
-          done = TRUE;
-        }
+      if ((count = GetDataBlock (fd, &buf[2])) <= 0)
+        done = TRUE;
 
       last_byte = 2 + count;
       curbit = (curbit - lastbit) + 16;
@@ -748,7 +732,7 @@ LZWReadByte (FILE *fd,
 
   if (just_reset_LZW)
     {
-      if (input_code_size > MAX_LZW_BITS || input_code_size <= 1)
+      if (input_code_size > MAX_LZW_BITS)
         {
           g_message ("Value out of range for code size (corrupted file?)");
           return -1;
@@ -761,10 +745,7 @@ LZWReadByte (FILE *fd,
       max_code_size = 2 * clear_code;
       max_code      = clear_code + 2;
 
-      if (GetCode (fd, 0, TRUE) < 0)
-        {
-          return -1;
-        }
+      GetCode (fd, 0, TRUE);
 
       fresh = TRUE;
 
@@ -792,11 +773,6 @@ LZWReadByte (FILE *fd,
         }
       while (firstcode == clear_code);
 
-      if (firstcode < 0)
-        {
-          return -1;
-        }
-
       return firstcode & 255;
     }
 
@@ -823,11 +799,6 @@ LZWReadByte (FILE *fd,
           max_code      = clear_code + 2;
           sp            = stack;
           firstcode     = oldcode = GetCode (fd, code_size, FALSE);
-
-          if (firstcode < 0)
-            {
-              return -1;
-            }
 
           return firstcode & 255;
         }
@@ -890,15 +861,10 @@ LZWReadByte (FILE *fd,
         return (*--sp) & 255;
     }
 
-  if (code < 0)
-    {
-      return -1;
-    }
-
   return code & 255;
 }
 
-static gboolean
+static gint32
 ReadImage (FILE        *fd,
            const gchar *filename,
            gint         len,
@@ -911,9 +877,9 @@ ReadImage (FILE        *fd,
            guint        leftpos,
            guint        toppos,
            guint        screenwidth,
-           guint        screenheight,
-           gint32      *image_ID)
+           guint        screenheight)
 {
+  static gint32 image_ID   = -1;
   static gint   frame_number = 1;
 
   gint32        layer_ID;
@@ -934,8 +900,7 @@ ReadImage (FILE        *fd,
   if (len < 1 || height < 1)
     {
       g_message ("Bogus frame dimensions");
-      *image_ID = -1;
-      return FALSE;
+      return -1;
     }
 
   /*
@@ -944,15 +909,13 @@ ReadImage (FILE        *fd,
   if (! ReadOK (fd, &c, 1))
     {
       g_message ("EOF / read error on image data");
-      *image_ID = -1;
-      return FALSE;
+      return -1;
     }
 
   if (LZWReadByte (fd, TRUE, c) < 0)
     {
       g_message ("Error while reading");
-      *image_ID = -1;
-      return FALSE;
+      return -1;
     }
 
   if (frame_number == 1)
@@ -964,8 +927,8 @@ ReadImage (FILE        *fd,
       if (screenheight == 0)
         screenheight = height;
 
-      *image_ID = gimp_image_new (screenwidth, screenheight, GIMP_INDEXED);
-      gimp_image_set_filename (*image_ID, filename);
+      image_ID = gimp_image_new (screenwidth, screenheight, GIMP_INDEXED);
+      gimp_image_set_filename (image_ID, filename);
 
       for (i = 0, j = 0; i < ncols; i++)
         {
@@ -974,7 +937,7 @@ ReadImage (FILE        *fd,
           used_cmap[2][i] = gimp_cmap[j++] = cmap[2][i];
         }
 
-      gimp_image_set_colormap (*image_ID, gimp_cmap, ncols);
+      gimp_image_set_colormap (image_ID, gimp_cmap, ncols);
 
       if (Gif89.delayTime < 0)
         framename = g_strdup (_("Background"));
@@ -986,13 +949,13 @@ ReadImage (FILE        *fd,
 
       if (Gif89.transparent == -1)
         {
-          layer_ID = gimp_layer_new (*image_ID, framename,
+          layer_ID = gimp_layer_new (image_ID, framename,
                                      len, height,
                                      GIMP_INDEXED_IMAGE, 100, GIMP_NORMAL_MODE);
         }
       else
         {
-          layer_ID = gimp_layer_new (*image_ID, framename,
+          layer_ID = gimp_layer_new (image_ID, framename,
                                      len, height,
                                      GIMP_INDEXEDA_IMAGE, 100, GIMP_NORMAL_MODE);
           alpha_frame=TRUE;
@@ -1023,7 +986,7 @@ ReadImage (FILE        *fd,
 #ifdef GIFDEBUG
                   g_print ("GIF: Promoting image to RGB...\n");
 #endif
-                  gimp_image_convert_rgb (*image_ID);
+                  gimp_image_convert_rgb (image_ID);
 
                   break;
                 }
@@ -1075,7 +1038,7 @@ ReadImage (FILE        *fd,
         }
       previous_disposal = Gif89.disposal;
 
-      layer_ID = gimp_layer_new (*image_ID, framename,
+      layer_ID = gimp_layer_new (image_ID, framename,
                                  len, height,
                                  promote_to_rgb ?
                                  GIMP_RGBA_IMAGE : GIMP_INDEXEDA_IMAGE,
@@ -1086,7 +1049,7 @@ ReadImage (FILE        *fd,
 
   frame_number++;
 
-  gimp_image_insert_layer (*image_ID, layer_ID, -1, 0);
+  gimp_image_insert_layer (image_ID, layer_ID, -1, 0);
   gimp_layer_translate (layer_ID, (gint) leftpos, (gint) toppos);
 
   drawable = gimp_drawable_get (layer_ID);
@@ -1098,8 +1061,7 @@ ReadImage (FILE        *fd,
   {
     g_message ("'%s' has a larger image size than GIMP can handle.",
                gimp_filename_to_utf8 (filename));
-    *image_ID = -1;
-    return FALSE;
+    return -1;
   }
 
   if (alpha_frame)
@@ -1209,12 +1171,10 @@ ReadImage (FILE        *fd,
         break;
     }
 
-  if (v < 0)
-    {
-      return FALSE;
-    }
-
  fini:
+  if (LZWReadByte (fd, FALSE, c) >= 0)
+    g_print ("GIF: too much input data, ignoring extra...\n");
+
   gimp_progress_update (1.0);
   gimp_pixel_rgn_init (&pixel_rgn, drawable,
                        0, 0, drawable->width, drawable->height, TRUE, FALSE);
@@ -1226,11 +1186,5 @@ ReadImage (FILE        *fd,
   gimp_drawable_flush (drawable);
   gimp_drawable_detach (drawable);
 
-  if (LZWReadByte (fd, FALSE, c) >= 0)
-    {
-      g_print ("GIF: too much input data, ignoring extra...\n");
-      return FALSE;
-    }
-
-  return TRUE;
+  return image_ID;
 }

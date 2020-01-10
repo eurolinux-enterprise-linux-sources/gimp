@@ -211,11 +211,10 @@ run (const gchar      *name,
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
 
-          export = gimp_export_image (&image_ID, &drawable_ID, "PCX",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB  |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED);
-
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -393,19 +392,19 @@ load_image (const gchar  *filename,
   height       = GUINT16_FROM_LE (pcx_header.y2) - offset_y + 1;
   bytesperline = GUINT16_FROM_LE (pcx_header.bytesperline);
 
-  if ((width <= 0) || (width > GIMP_MAX_IMAGE_SIZE))
+  if ((width < 0) || (width > GIMP_MAX_IMAGE_SIZE))
     {
       g_message (_("Unsupported or invalid image width: %d"), width);
       fclose (fd);
       return -1;
     }
-  if ((height <= 0) || (height > GIMP_MAX_IMAGE_SIZE))
+  if ((height < 0) || (height > GIMP_MAX_IMAGE_SIZE))
     {
       g_message (_("Unsupported or invalid image height: %d"), height);
       fclose (fd);
       return -1;
     }
-  if (bytesperline < ((width * pcx_header.bpp + 7) / 8))
+  if (bytesperline < (width * pcx_header.bpp) / 8)
     {
       g_message (_("Invalid number of bytes per line in PCX header"));
       fclose (fd);

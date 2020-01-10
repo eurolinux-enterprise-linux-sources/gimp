@@ -142,20 +142,10 @@ channel_copy_invoker (GimpProcedure      *procedure,
 
   if (success)
     {
-      GimpImage *image  = gimp_item_get_image (GIMP_ITEM (channel));
-      gint       width  = gimp_image_get_width  (image);
-      gint       height = gimp_image_get_height (image);
+      channel_copy = GIMP_CHANNEL (gimp_item_duplicate (GIMP_ITEM (channel),
+                                   G_TYPE_FROM_INSTANCE (channel)));
 
-      if (gimp_item_get_width  (GIMP_ITEM (channel)) == width &&
-          gimp_item_get_height (GIMP_ITEM (channel)) == height)
-        {
-          channel_copy = GIMP_CHANNEL (gimp_item_duplicate (GIMP_ITEM (channel),
-                                                            GIMP_TYPE_CHANNEL));
-
-          if (! channel_copy)
-            success = FALSE;
-        }
-      else
+      if (! channel_copy)
         success = FALSE;
     }
 

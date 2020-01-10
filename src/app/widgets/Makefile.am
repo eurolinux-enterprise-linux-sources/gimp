@@ -1,23 +1,18 @@
 ## Process this file with automake to produce Makefile.in
 
-if PLATFORM_OSX
-xobjective_c = "-xobjective-c"
-endif
-
 AM_CPPFLAGS = \
         -DISO_CODES_LOCATION=\"$(ISO_CODES_LOCATION)\"		\
         -DISO_CODES_LOCALEDIR=\"$(ISO_CODES_LOCALEDIR)\"	\
 	-DG_LOG_DOMAIN=\"Gimp-Widgets\"
 
 INCLUDES = \
-	-I$(top_builddir)		\
-	-I$(top_srcdir)			\
+	-I$(top_builddir)	\
+	-I$(top_srcdir)		\
 	-I$(top_builddir)/app	\
-	-I$(top_srcdir)/app		\
-	$(GEGL_CFLAGS)			\
-	$(GTK_CFLAGS)			\
-	-I$(includedir) 		\
-	$(xobjective_c)
+	-I$(top_srcdir)/app	\
+	$(GEGL_CFLAGS)		\
+	$(GTK_CFLAGS)		\
+	-I$(includedir)
 
 noinst_LIBRARIES = libappwidgets.a
 

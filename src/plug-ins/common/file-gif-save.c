@@ -281,7 +281,7 @@ run (const gchar      *name,
             if (gsvals.as_animation)
               capabilities |= GIMP_EXPORT_CAN_HANDLE_LAYERS;
 
-            export = gimp_export_image (&image_ID, &drawable_ID, "GIF",
+            export = gimp_export_image (&image_ID, &drawable_ID, NULL,
                                         capabilities);
 
             if (export == GIMP_EXPORT_CANCEL)

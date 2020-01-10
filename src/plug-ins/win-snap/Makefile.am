@@ -44,4 +44,4 @@ LDADD = \
 	$(INTLLIBS)
 
 winsnap-win32res.o: winsnap.rc select.cur small.ico winsnap.ico
-	$(WINDRES) $(srcdir)/winsnap.rc winsnap-win32res.o
+	$(WINDRES) winsnap.rc winsnap-win32res.o

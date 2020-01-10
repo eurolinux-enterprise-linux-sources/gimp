@@ -74,7 +74,7 @@ void                gimp_stroke_options_take_dash_pattern    (GimpStrokeOptions 
 
 void                gimp_stroke_options_prepare              (GimpStrokeOptions *options,
                                                               GimpContext       *context,
-                                                              GimpPaintOptions  *paint_options);
+                                                              gboolean           use_default_values);
 void                gimp_stroke_options_finish               (GimpStrokeOptions *options);
 
 

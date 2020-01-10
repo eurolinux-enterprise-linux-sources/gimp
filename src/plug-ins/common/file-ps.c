@@ -105,9 +105,7 @@ static const gchar dversio[] = "v1.17  19-Sep-2004";
 #define PLUG_IN_ROLE         "gimp-file-ps"
 
 
-#define STR_LENGTH     64
-#define MIN_RESOLUTION 5
-#define MAX_RESOLUTION 8192
+#define STR_LENGTH 64
 
 /* Load info */
 typedef struct
@@ -864,13 +862,10 @@ run (const gchar      *name,
         case GIMP_RUN_INTERACTIVE:
         case GIMP_RUN_WITH_LAST_VALS:
           gimp_ui_init (PLUG_IN_BINARY, FALSE);
-
-          export = gimp_export_image (&image_ID, &drawable_ID,
-                                      psvals.eps ? "EPS" : "PostScript",
-                                      GIMP_EXPORT_CAN_HANDLE_RGB  |
-                                      GIMP_EXPORT_CAN_HANDLE_GRAY |
-                                      GIMP_EXPORT_CAN_HANDLE_INDEXED);
-
+          export = gimp_export_image (&image_ID, &drawable_ID, NULL,
+                                      (GIMP_EXPORT_CAN_HANDLE_RGB |
+                                       GIMP_EXPORT_CAN_HANDLE_GRAY |
+                                       GIMP_EXPORT_CAN_HANDLE_INDEXED));
           if (export == GIMP_EXPORT_CANCEL)
             {
               values[0].data.d_status = GIMP_PDB_CANCEL;
@@ -1230,10 +1225,10 @@ save_image (const gchar  *filename,
 static void
 check_load_vals (void)
 {
-  if (plvals.resolution < MIN_RESOLUTION)
-    plvals.resolution = MIN_RESOLUTION;
-  else if (plvals.resolution > MAX_RESOLUTION)
-    plvals.resolution = MAX_RESOLUTION;
+  if (plvals.resolution < 5)
+    plvals.resolution = 5;
+  else if (plvals.resolution > 1440)
+    plvals.resolution = 1440;
 
   if (plvals.width < 2)
     plvals.width = 2;
@@ -3017,8 +3012,7 @@ load_dialog (const gchar *filename,
   gtk_widget_show (table);
 
   spinbutton = gimp_spin_button_new (&adj, plvals.resolution,
-                                     MIN_RESOLUTION, MAX_RESOLUTION,
-                                     1, 10, 0, 1, 0);
+                                     5, 1440, 1, 10, 0, 1, 0);
   gimp_table_attach_aligned (GTK_TABLE (table), 0, 0,
                              _("Resolution:"), 0.0, 0.5,
                              spinbutton, 1, FALSE);
@@ -3030,6 +3024,7 @@ load_dialog (const gchar *filename,
   g_signal_connect (adj, "value-changed",
                     G_CALLBACK (gimp_int_adjustment_update),
                     &plvals.resolution);
+
 
 
   ps_width_spinbutton = gimp_spin_button_new (&adj, plvals.width,

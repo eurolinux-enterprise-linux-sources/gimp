@@ -293,14 +293,13 @@ file_save_cmd_callback (GtkAction *action,
     case GIMP_SAVE_MODE_EXPORT_TO:
     case GIMP_SAVE_MODE_OVERWRITE:
       {
-        const gchar         *uri         = NULL;
-        GimpPlugInProcedure *export_proc = NULL;
-        gboolean             overwrite   = FALSE;
+        const gchar         *uri = NULL;
+        GimpPlugInProcedure *export_proc;
+        gboolean             overwrite;
 
         if (save_mode == GIMP_SAVE_MODE_EXPORT_TO)
           {
-            uri         = gimp_image_get_exported_uri (image);
-            export_proc = gimp_image_get_export_proc (image);
+            uri = gimp_image_get_exported_uri (image);
 
             if (! uri)
               {
@@ -318,7 +317,7 @@ file_save_cmd_callback (GtkAction *action,
             overwrite = TRUE;
           }
 
-        if (uri && ! export_proc)
+        if (uri)
           {
             export_proc =
               file_procedure_find (image->gimp->plug_in_manager->export_procs,
@@ -526,8 +525,6 @@ file_open_dialog_show (Gimp        *gimp,
 
       if (uri)
         gtk_file_chooser_set_uri (GTK_FILE_CHOOSER (dialog), uri);
-
-      gtk_window_set_title (GTK_WINDOW (dialog), title);
 
       gimp_file_dialog_set_open_image (GIMP_FILE_DIALOG (dialog),
                                        image, open_as_layers);

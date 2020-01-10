@@ -42,7 +42,7 @@
 # specified in bytes, kilobytes, megabytes or gigabytes. If no suffix is
 # specified the size defaults to being specified in kilobytes.
 # 
-# (tile-cache-size 1421926k)
+# (tile-cache-size 2147483647)
 
 # Specifies the language to use for the user interface.  This is a string
 # value.
@@ -446,6 +446,11 @@
 # 
 # 
 # (image-status-format "%n (%m)")
+
+# Ask for confirmation before closing an image without saving.  Possible
+# values are yes and no.
+# 
+# (confirm-on-close yes)
 
 # Sets the monitor's horizontal resolution, in dots per inch.  If set to 0,
 # forces the X server to be queried for both horizontal and vertical

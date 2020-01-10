@@ -86,7 +86,6 @@ gimp_unique_dbus_open (const gchar **filenames,
 		       gboolean      as_new)
 {
 #ifndef GIMP_CONSOLE_COMPILATION
-#if HAVE_DBUS_GLIB
 
 /*  for the DBus service names  */
 #include "gui/gimpdbusservice.h"
@@ -172,8 +171,7 @@ gimp_unique_dbus_open (const gchar **filenames,
       g_printerr ("%s\n", error->message);
       g_clear_error (&error);
     }
-#endif /* GIMP_CONSOLE_COMPILATION */
-#endif /* HAVE_DBUS_GLIB */
+#endif
 
   return FALSE;
 }

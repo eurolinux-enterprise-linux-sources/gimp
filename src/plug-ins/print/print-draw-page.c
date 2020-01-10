@@ -28,8 +28,7 @@
 #include "libgimp/stdplugins-intl.h"
 
 
-static cairo_surface_t * print_surface_from_drawable (gint32        drawable_ID,
-                                                      GError      **error);
+static cairo_surface_t * print_surface_from_drawable (gint32  drawable_ID);
 
 static void              print_draw_crop_marks       (GtkPrintContext *context,
                                                       gdouble          x,
@@ -39,50 +38,37 @@ static void              print_draw_crop_marks       (GtkPrintContext *context,
 
 gboolean
 print_draw_page (GtkPrintContext *context,
-                 PrintData       *data,
-                 GError         **error)
+                 PrintData       *data)
 {
   cairo_t         *cr = gtk_print_context_get_cairo_context (context);
   cairo_surface_t *surface;
+  gint             width;
+  gint             height;
+  gdouble          scale_x;
+  gdouble          scale_y;
 
-  surface = print_surface_from_drawable (data->drawable_id, error);
+  surface = print_surface_from_drawable (data->drawable_id);
 
-  if (surface)
-    {
-      gint    width;
-      gint    height;
-      gdouble scale_x;
-      gdouble scale_y;
+  width  = cairo_image_surface_get_width (surface);
+  height = cairo_image_surface_get_height (surface);
 
-      /*  create a white rectangle covering the entire page, just
-       *  to be safe; see bug #777233.
-       */
-      cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-      cairo_paint (cr);
+  scale_x = gtk_print_context_get_dpi_x (context) / data->xres;
+  scale_y = gtk_print_context_get_dpi_y (context) / data->yres;
 
-      width  = cairo_image_surface_get_width (surface);
-      height = cairo_image_surface_get_height (surface);
+  cairo_translate (cr, data->offset_x, data->offset_y);
 
-      scale_x = gtk_print_context_get_dpi_x (context) / data->xres;
-      scale_y = gtk_print_context_get_dpi_y (context) / data->yres;
+  if (data->draw_crop_marks)
+    print_draw_crop_marks (context,
+                           0, 0, width * scale_x, height * scale_y);
 
-      cairo_translate (cr, data->offset_x, data->offset_y);
+  cairo_scale (cr, scale_x, scale_y);
+  cairo_rectangle (cr, 0, 0, width, height);
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_fill (cr);
 
-      if (data->draw_crop_marks)
-        print_draw_crop_marks (context,
-                               0, 0, width * scale_x, height * scale_y);
+  cairo_surface_destroy (surface);
 
-      cairo_scale (cr, scale_x, scale_y);
-      cairo_rectangle (cr, 0, 0, width, height);
-      cairo_set_source_surface (cr, surface, 0, 0);
-      cairo_fill (cr);
-
-      cairo_surface_destroy (surface);
-
-      return TRUE;
-    }
-
-  return FALSE;
+  return TRUE;
 }
 
 
@@ -183,8 +169,7 @@ convert_from_indexeda (const guchar *src,
 }
 
 static cairo_surface_t *
-print_surface_from_drawable (gint32   drawable_ID,
-                             GError **error)
+print_surface_from_drawable (gint32 drawable_ID)
 {
   GimpDrawable    *drawable      = gimp_drawable_get (drawable_ID);
   GimpPixelRgn     region;
@@ -198,7 +183,6 @@ print_surface_from_drawable (gint32   drawable_ID,
   guint            count         = 0;
   guint            done          = 0;
   gpointer         pr;
-  cairo_status_t   status;
 
   if (gimp_drawable_is_indexed (drawable_ID))
     {
@@ -215,29 +199,6 @@ print_surface_from_drawable (gint32   drawable_ID,
                                         CAIRO_FORMAT_ARGB32 :
                                         CAIRO_FORMAT_RGB24,
                                         width, height);
-
-  status = cairo_surface_status (surface);
-  if (status != CAIRO_STATUS_SUCCESS)
-    {
-      switch (status)
-        {
-        case CAIRO_STATUS_INVALID_SIZE:
-          g_set_error_literal (error,
-                               1,
-                               0,
-                               _("Cannot handle the size (either width or height) of the image."));
-          break;
-        default:
-          g_set_error (error,
-                       1,
-                       0,
-                       "Cairo error: %s",
-                       cairo_status_to_string (status));
-          break;
-        }
-
-      return NULL;
-    }
 
   pixels = cairo_image_surface_get_data (surface);
   stride = cairo_image_surface_get_stride (surface);

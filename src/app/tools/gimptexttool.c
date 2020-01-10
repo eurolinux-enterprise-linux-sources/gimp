@@ -543,13 +543,6 @@ gimp_text_tool_button_release (GimpTool              *tool,
       if (release_type == GIMP_BUTTON_RELEASE_CANCEL)
         release_type = GIMP_BUTTON_RELEASE_NORMAL;
     }
-  else if (text_tool->moving)
-    {
-      /*  the user has moved the text layer with Alt-drag, fall
-       *  through and let rectangle-change-complete do its job of
-       *  setting text layer's new position.
-       */
-    }
   else if (gimp_rectangle_tool_get_function (rect_tool) ==
            GIMP_RECTANGLE_TOOL_DEAD)
     {
@@ -779,11 +772,7 @@ gimp_text_tool_draw (GimpDrawTool *draw_tool)
   if (! text_tool->text  ||
       ! text_tool->layer ||
       ! text_tool->layer->text)
-    {
-      gimp_text_tool_editor_update_im_rect (text_tool);
-
-      return;
-    }
+    return;
 
   gimp_text_tool_ensure_layout (text_tool);
 
@@ -816,8 +805,6 @@ gimp_text_tool_draw (GimpDrawTool *draw_tool)
                                              overwrite);
       gimp_canvas_item_set_highlight (item, TRUE);
     }
-
-  gimp_text_tool_editor_update_im_rect (text_tool);
 }
 
 static void

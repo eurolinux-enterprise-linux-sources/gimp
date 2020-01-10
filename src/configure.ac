@@ -8,16 +8,16 @@ AC_PREREQ(2.54)
 
 m4_define([gimp_major_version], [2])
 m4_define([gimp_minor_version], [8])
-m4_define([gimp_micro_version], [22])
+m4_define([gimp_micro_version], [8])
 m4_define([gimp_real_version],
           [gimp_major_version.gimp_minor_version.gimp_micro_version])
 m4_define([gimp_version], [gimp_real_version])
-m4_define([gimp_interface_age], [22])
+m4_define([gimp_interface_age], [8])
 m4_define([gimp_binary_age],
           [m4_eval(100 * gimp_minor_version + gimp_micro_version)])
 
 # For overriding the version string. Comment out if not needed.
-# m4_define([gimp_version], [2.8.9])
+# m4_define([gimp_version], [2.8.8])
 
 # This is the X.Y used in -lgimp-X.Y
 m4_define([gimp_api_version], [2.0])
@@ -50,7 +50,6 @@ m4_define([cairo_required_version], [1.10.2])
 m4_define([cairo_pdf_required_version], [1.10.2])
 m4_define([pangocairo_required_version], [1.29.4])
 m4_define([fontconfig_required_version], [2.2.0])
-m4_define([fontconfig_win32_recommended_version], [2.11.1])
 m4_define([gtkdoc_required_version], [1.0])
 m4_define([webkit_required_version], [1.6.1])
 m4_define([alsa_required_version], [1.0.0])
@@ -65,12 +64,7 @@ m4_define([exif_required_version], [0.6.15])
 m4_define([lcms1_required_version], [1.16])
 m4_define([lcms2_required_version], [2.2])
 m4_define([libpng_required_version], [1.2.37])
-m4_define([gtk_mac_integration_required_version], [2.0.0])
-m4_define([python2_required_version], [2.5.0])
 
-# Current test considers only 2 version numbers. If we update the recommended
-# version of gettext with more version numbers, please update the tests.
-m4_define([xgettext_recommended_version], [0.19])
 
 AC_INIT([GIMP], [gimp_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=GIMP],
@@ -128,14 +122,10 @@ GLIB_REQUIRED_VERSION=glib_required_version
 GDK_PIXBUF_REQUIRED_VERSION=gdk_pixbuf_required_version
 GTK_REQUIRED_VERSION=gtk_required_version
 CAIRO_REQUIRED_VERSION=cairo_required_version
-FONTCONFIG_WIN32_RECOMMENDED_VERSION=fontconfig_win32_recommended_version
-PYTHON2_REQUIRED_VERSION=python2_required_version
 AC_SUBST(GLIB_REQUIRED_VERSION)
 AC_SUBST(GDK_PIXBUF_REQUIRED_VERSION)
 AC_SUBST(GTK_REQUIRED_VERSION)
 AC_SUBST(CAIRO_REQUIRED_VERSION)
-AC_SUBST(FONTCONFIG_WIN32_RECOMMENDED_VERSION)
-AC_SUBST(PYTHON2_REQUIRED_VERSION)
 
 # The symbol GIMP_UNSTABLE is defined above for substitution in
 # Makefiles and conditionally defined here as a preprocessor symbol
@@ -162,11 +152,6 @@ GETTEXT_PACKAGE=gimp20
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
                    [The prefix for our gettext translation domains.])
-
-# work around intltool-update issues during 'make distcheck'
-AS_IF([test "x$0" != "x./configure"], [
-        AC_SUBST([INTLTOOL_UPDATE], [/bin/true])
-])
 
 # Determine a C compiler to use
 AC_PROG_CC
@@ -374,6 +359,9 @@ CFLAGS="$CFLAGS $extra_warnings"
 GIMP_DETECT_CFLAGS(extra_warnings, '-Wformat-security')
 CFLAGS="$CFLAGS $extra_warnings"
 
+GIMP_DETECT_CFLAGS(extra_warnings, '-Wformat-non-literal')
+CFLAGS="$CFLAGS $extra_warnings"
+
 GIMP_DETECT_CFLAGS(extra_warnings, '-fno-common')
 CFLAGS="$CFLAGS $extra_warnings"
 
@@ -430,7 +418,6 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
 AC_CHECK_HEADERS(execinfo.h sys/param.h sys/time.h sys/times.h sys/wait.h unistd.h)
-AC_CHECK_FUNCS(backtrace, , AC_CHECK_LIB(execinfo, backtrace))
 
 AC_TYPE_PID_T
 AC_FUNC_VPRINTF
@@ -467,38 +454,6 @@ fi
 IT_PROG_INTLTOOL(0.40.1)
 AM_GLIB_GNU_GETTEXT
 
-# Testing xgettext version since we had some problem with localizing script-fu. See bug 720052.
-AC_MSG_CHECKING([for recommended xgettext version (>= xgettext_recommended_version)])
-XGETTEXT_RECOMMENDED_VERSION=xgettext_recommended_version
-XGETTEXT_RECOMMENDED_VERSION_MAJOR=`echo $XGETTEXT_RECOMMENDED_VERSION | awk -F. '{ print $ 1; }'`
-XGETTEXT_RECOMMENDED_VERSION_MINOR_1=`echo $XGETTEXT_RECOMMENDED_VERSION | awk -F. '{ print $ 2; }'`
-
-XGETTEXT_APPLIED_VERSION=`$XGETTEXT --version | head -1 | cut -d" " -f4`
-XGETTEXT_APPLIED_VERSION_MAJOR=`echo $XGETTEXT_APPLIED_VERSION | awk -F. '{ print $ 1; }'`
-XGETTEXT_APPLIED_VERSION_MINOR_1=`echo $XGETTEXT_APPLIED_VERSION | awk -F. '{ print $ 2; }'`
-
-have_recommended_xgettext="no"
-if test -n "$XGETTEXT_APPLIED_VERSION_MAJOR"; then
-    if test "$XGETTEXT_RECOMMENDED_VERSION_MAJOR" -lt "$XGETTEXT_APPLIED_VERSION_MAJOR"; then
-        have_recommended_xgettext="yes"
-    elif test "$XGETTEXT_RECOMMENDED_VERSION_MAJOR" -eq "$XGETTEXT_APPLIED_VERSION_MAJOR"; then
-        if test -n "$XGETTEXT_APPLIED_VERSION_MINOR_1"; then
-            if test "$XGETTEXT_RECOMMENDED_VERSION_MINOR_1" -le "$XGETTEXT_APPLIED_VERSION_MINOR_1"; then
-                have_recommended_xgettext="yes"
-            fi
-        fi
-    fi
-fi
-AC_MSG_RESULT($have_recommended_xgettext)
-
-if test "x$have_recommended_xgettext" = "xno"; then
-    have_recommended_xgettext="
-WARNING: Your gettext version is $XGETTEXT_APPLIED_VERSION.
-         The recommended gettext version is $XGETTEXT_RECOMMENDED_VERSION or over.
-         If you continue without updating gettext, your build will have partially broken localization."
-else
-    have_recommended_xgettext=""
-fi
 
 ###########
 # iso-codes
@@ -597,24 +552,6 @@ gimp_save_CFLAGS=$CFLAGS
 CFLAGS="$PANGOCAIRO_CFLAGS $CFLAGS"
 
 PKG_CHECK_MODULES(FONTCONFIG, fontconfig >= fontconfig_required_version)
-
-# Windows platform had a few bugs fixed in earlier fontconfig.
-# Display a warning when compiling with a flawed fontconfig.
-# See bugs 708110 and 703331.
-have_recommended_fontconfig=""
-if test "x$platform_win32" = "xyes"; then
-    PKG_CHECK_MODULES(RECOMMENDED_WIN32_FONTCONFIG, fontconfig >= fontconfig_win32_recommended_version,
-                      have_recommended_fontconfig="yes", have_recommended_fontconfig="no")
-
-    if test "x$have_recommended_fontconfig" = xno; then
-        have_recommended_fontconfig="
-WARNING: Your fontconfig version is `$PKG_CONFIG --modversion fontconfig`.
-         The recommended fontconfig version under Windows is $FONTCONFIG_WIN32_RECOMMENDED_VERSION or over.
-         If you continue without updating fontconfig, your build may have partially broken font processing."
-    else
-        have_recommended_fontconfig=""
-    fi
-fi
 
 AC_MSG_CHECKING([if Pango is version 1.32.0 or newer])
 if $PKG_CONFIG --atleast-version=1.32.0 pango; then
@@ -1418,9 +1355,6 @@ else
 fi
 
 AC_SUBST(WEB_PAGE)
-if test "x$have_webkit" = "xyes"; then
-  AC_DEFINE(HAVE_WEBKIT, 1, [Define to 1 if webkit is available])
-fi
 AM_CONDITIONAL(HAVE_WEBKIT, test "x$have_webkit" = xyes)
 
 
@@ -1868,10 +1802,10 @@ m4_define([pycheck_error], [
 if test "x$enable_python" != xno; then
   enable_python="yes"
   # check for Python
-  AM_PATH_PYTHON2(python2_required_version,,
-    [AC_MSG_ERROR([pycheck_error([Python 2 (python2_required_version or newer)], [it])])])
+  AM_PATH_PYTHON(2.5.0,,
+    [AC_MSG_ERROR([pycheck_error([Python 2.5.0 or newer], [it])])])
   AM_CHECK_PYTHON_HEADERS(,
-    [AC_MSG_ERROR([pycheck_error([Python 2 headers], [them])])])
+    [AC_MSG_ERROR([pycheck_error([Python headers], [them])])])
 
   # Win32 needs all symbols resolved for linking, even for DLLs
   # Assume the link library is in $exec_prefix/libs
@@ -1956,26 +1890,6 @@ case "$target_or_host" in
 esac
 
 AM_CONDITIONAL(PLATFORM_OSX, test "x$platform_osx" = xyes)
-
-
-###############################
-# Check for GTK Mac Integration
-###############################
-
-gtk_mac_integration_ok=no
-if test "x$platform_osx" != xno &&
-   test "x`$PKG_CONFIG --variable=target gtk+-2.0`" == "xquartz"; then
-
-  PKG_CHECK_MODULES(GTK_MAC_INTEGRATION, gtk-mac-integration-gtk2 >= gtk_mac_integration_required_version,
-    gtk_mac_integration_ok=yes,
-    gtk_mac_integration_ok=no)
-
-  if test "x$gtk_mac_integration_ok" != "xyes"; then
-    PKG_CHECK_MODULES(GTK_MAC_INTEGRATION, gtk-mac-integration >= gtk_mac_integration_required_version,
-      gtk_mac_integration_ok=yes,
-      gtk_mac_integration_ok=no)
-  fi
-fi
 
 
 ####################################
@@ -2307,7 +2221,6 @@ app/tests/gimpdir/brushes/Makefile
 app/tests/gimpdir/gradients/Makefile
 app/tests/gimpdir/patterns/Makefile
 build/Makefile
-build/osx/Makefile
 build/windows/Makefile
 build/windows/gimp.rc
 build/windows/gimp-plug-ins.rc
@@ -2474,7 +2387,7 @@ Optional Plug-Ins:
   PNG:                 $have_libpng
   Print:               $enable_print
   PSP:                 $have_zlib
-  Python 2:            $enable_python
+  Python:              $enable_python
   Script-Fu:           $have_script_fu
   SVG:                 $have_librsvg
   TIFF:                $have_libtiff
@@ -2500,5 +2413,4 @@ Optional Modules:
 
 Tests:
   Use xvfb-run         $have_xvfb_run
-$have_recommended_xgettext $have_recommended_fontconfig
 ]);

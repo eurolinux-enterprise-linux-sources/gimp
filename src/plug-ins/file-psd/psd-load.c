@@ -1098,18 +1098,13 @@ add_layers (const gint32  image_id,
                 }
               else /* group-type == 1 || group_type == 2 */
                 {
-                  if (parent_group_stack->len)
-                    {
-                      layer_id = g_array_index (parent_group_stack, gint32,
-                                                parent_group_stack->len-1);
-                      /* since the layers are stored in reverse, the group
-                         layer start marker actually means we're done with
-                         that layer group */
-                      g_array_remove_index (parent_group_stack,
+                  layer_id = g_array_index (parent_group_stack, gint32,
                                             parent_group_stack->len-1);
-                    }
-                  else
-                    layer_id = -1;
+                  /* since the layers are stored in reverse, the group
+                     layer start marker actually means we're done with
+                     that layer group */
+                  g_array_remove_index (parent_group_stack,
+                                        parent_group_stack->len-1);
                 }
             }
 
@@ -1252,11 +1247,8 @@ add_layers (const gint32  image_id,
           l_y = 0;
           l_w = img_a->columns;
           l_h = img_a->rows;
-          if (parent_group_stack->len > 0)
-            parent_group_id = g_array_index (parent_group_stack, gint32,
-                                             parent_group_stack->len-1);
-          else
-            parent_group_id = -1; /* root */
+          parent_group_id = g_array_index (parent_group_stack, gint32,
+                                           parent_group_stack->len-1);
 
           IFDBG(3) g_debug ("Re-hash channel indices");
           for (cidx = 0; cidx < lyr_a[lidx]->num_channels; ++cidx)
@@ -1296,23 +1288,20 @@ add_layers (const gint32  image_id,
               else
                 {
                   IFDBG(2) g_debug ("End group layer id %d.", layer_id);
-                  if (layer_id != -1)
-                    {
-                      drawable = gimp_drawable_get (layer_id);
-                      layer_mode = psd_to_gimp_blend_mode (lyr_a[lidx]->blend_mode);
-                      gimp_layer_set_mode (layer_id, layer_mode);
-                      gimp_layer_set_opacity (layer_id,
-                                              lyr_a[lidx]->opacity * 100 / 255);
-                      gimp_item_set_name (drawable->drawable_id, lyr_a[lidx]->name);
-                      g_free (lyr_a[lidx]->name);
-                      gimp_item_set_visible (drawable->drawable_id,
-                                             lyr_a[lidx]->layer_flags.visible);
-                      if (lyr_a[lidx]->id)
-                        gimp_item_set_tattoo (drawable->drawable_id,
-                                              lyr_a[lidx]->id);
-                      gimp_drawable_flush (drawable);
-                      gimp_drawable_detach (drawable);
-                    }
+                  drawable = gimp_drawable_get (layer_id);
+                  layer_mode = psd_to_gimp_blend_mode (lyr_a[lidx]->blend_mode);
+                  gimp_layer_set_mode (layer_id, layer_mode);
+                  gimp_layer_set_opacity (layer_id, 
+                                          lyr_a[lidx]->opacity * 100 / 255);
+                  gimp_item_set_name (drawable->drawable_id, lyr_a[lidx]->name);
+                  g_free (lyr_a[lidx]->name);
+                  gimp_item_set_visible (drawable->drawable_id,
+                                         lyr_a[lidx]->layer_flags.visible);
+                  if (lyr_a[lidx]->id)
+                    gimp_item_set_tattoo (drawable->drawable_id,
+                                          lyr_a[lidx]->id);
+                  gimp_drawable_flush (drawable);
+                  gimp_drawable_detach (drawable);
                 }
             }
           else if (empty)
@@ -1323,7 +1312,7 @@ add_layers (const gint32  image_id,
                                          img_a->columns, img_a->rows,
                                          image_type, 0, GIMP_NORMAL_MODE);
               g_free (lyr_a[lidx]->name);
-              gimp_image_insert_layer (image_id, layer_id, parent_group_id, 0);
+              gimp_image_insert_layer (image_id, layer_id, parent_group_id, -1);
               drawable = gimp_drawable_get (layer_id);
               gimp_drawable_fill (drawable->drawable_id, GIMP_TRANSPARENT_FILL);
               gimp_item_set_visible (drawable->drawable_id, lyr_a[lidx]->layer_flags.visible);
@@ -1360,7 +1349,7 @@ add_layers (const gint32  image_id,
                                          layer_mode);
               IFDBG(3) g_debug ("Layer tattoo: %d", layer_id);
               g_free (lyr_a[lidx]->name);
-              gimp_image_insert_layer (image_id, layer_id, parent_group_id, 0);
+              gimp_image_insert_layer (image_id, layer_id, parent_group_id, -1);
               gimp_layer_set_offsets (layer_id, l_x, l_y);
               gimp_layer_set_lock_alpha  (layer_id, lyr_a[lidx]->layer_flags.trans_prot);
               drawable = gimp_drawable_get (layer_id);
@@ -1415,15 +1404,16 @@ add_layers (const gint32  image_id,
                   IFDBG(3) g_debug ("Allocate Pixels %d", layer_size);
                   /* Crop mask at layer boundry */
                   IFDBG(3) g_debug ("Original Mask %d %d %d %d", lm_x, lm_y, lm_w, lm_h);
-                  if (lm_x < 0          ||
-                      lm_y < 0          ||
-                      lm_w + lm_x > l_w ||
-                      lm_h + lm_y > l_h)
+                  if (lm_x < 0
+                      || lm_y < 0
+                      || lm_w + lm_x > l_w
+                      || lm_h + lm_y > l_h)
                     {
-                      g_message (_("Warning\n"
-                          "The layer mask is partly outside the "
-                          "layer boundary. The mask will be "
-                          "cropped which may result in data loss."));
+                      if (CONVERSION_WARNINGS)
+                        g_message ("Warning\n"
+                                   "The layer mask is partly outside the "
+                                   "layer boundary. The mask will be "
+                                   "cropped which may result in data loss.");
                       i = 0;
                       for (rowi = 0; rowi < lm_h; ++rowi)
                         {
@@ -1456,36 +1446,28 @@ add_layers (const gint32  image_id,
                         lm_h = l_h - lm_y;
                     }
                   else
-                    {
-                      memcpy (pixels, lyr_chn[user_mask_chn]->data, layer_size);
-                      i = layer_size;
-                    }
-
+                    memcpy (pixels, lyr_chn[user_mask_chn]->data, layer_size);
                   g_free (lyr_chn[user_mask_chn]->data);
-                  /* Draw layer mask data, if any */
-                  if (i > 0)
-                    {
-                      IFDBG(3) g_debug ("Layer %d %d %d %d", l_x, l_y, l_w, l_h);
-                      IFDBG(3) g_debug ("Mask %d %d %d %d", lm_x, lm_y, lm_w, lm_h);
+                  /* Draw layer mask data */
+                  IFDBG(3) g_debug ("Layer %d %d %d %d", l_x, l_y, l_w, l_h);
+                  IFDBG(3) g_debug ("Mask %d %d %d %d", lm_x, lm_y, lm_w, lm_h);
 
-                      if (lyr_a[lidx]->layer_mask.def_color == 255)
-                        mask_id = gimp_layer_create_mask (layer_id, GIMP_ADD_WHITE_MASK);
-                      else
-                        mask_id = gimp_layer_create_mask (layer_id, GIMP_ADD_BLACK_MASK);
+                  if (lyr_a[lidx]->layer_mask.def_color == 255)
+                    mask_id = gimp_layer_create_mask (layer_id, GIMP_ADD_WHITE_MASK);
+                  else
+                    mask_id = gimp_layer_create_mask (layer_id, GIMP_ADD_BLACK_MASK);
 
-                      IFDBG(3) g_debug ("New layer mask %d", mask_id);
-                      gimp_layer_add_mask (layer_id, mask_id);
-                      drawable = gimp_drawable_get (mask_id);
-                      gimp_pixel_rgn_init (&pixel_rgn, drawable, 0 , 0,
-                                           drawable->width, drawable->height, TRUE, FALSE);
-                      gimp_pixel_rgn_set_rect (&pixel_rgn, pixels, lm_x, lm_y, lm_w, lm_h);
-                      gimp_drawable_flush (drawable);
-                      gimp_drawable_detach (drawable);
-                      gimp_layer_set_apply_mask (layer_id,
-                                                 ! lyr_a[lidx]->layer_mask.mask_flags.disabled);
-                    }
-                  if (pixels)
-                    g_free (pixels);
+                  IFDBG(3) g_debug ("New layer mask %d", mask_id);
+                  gimp_layer_add_mask (layer_id, mask_id);
+                  drawable = gimp_drawable_get (mask_id);
+                  gimp_pixel_rgn_init (&pixel_rgn, drawable, 0 , 0,
+                                       drawable->width, drawable->height, TRUE, FALSE);
+                  gimp_pixel_rgn_set_rect (&pixel_rgn, pixels, lm_x, lm_y, lm_w, lm_h);
+                  gimp_drawable_flush (drawable);
+                  gimp_drawable_detach (drawable);
+                  gimp_layer_set_apply_mask (layer_id,
+                    ! lyr_a[lidx]->layer_mask.mask_flags.disabled);
+                  g_free (pixels);
                 }
             }
           for (cidx = 0; cidx < lyr_a[lidx]->num_channels; ++cidx)

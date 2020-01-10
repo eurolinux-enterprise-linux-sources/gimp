@@ -54,9 +54,6 @@
 /* Define to 1 if the altivec runtime test should use a sysctl. */
 #undef HAVE_ALTIVEC_SYSCTL
 
-/* Define to 1 if you have the `backtrace' function. */
-#undef HAVE_BACKTRACE
-
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 
@@ -125,9 +122,6 @@
 
 /* Define to 1 if you have the `asound' library (-lasound). */
 #undef HAVE_LIBASOUND
-
-/* Define to 1 if you have the `execinfo' library (-lexecinfo). */
-#undef HAVE_LIBEXECINFO
 
 /* Define to 1 if libexif is available */
 #undef HAVE_LIBEXIF
@@ -207,9 +201,6 @@
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
 
-/* Define to 1 if webkit is available */
-#undef HAVE_WEBKIT
-
 /* Define to 1 if you have the <X11/extensions/shape.h> header file. */
 #undef HAVE_X11_EXTENSIONS_SHAPE_H
 
@@ -228,7 +219,8 @@
 /* Define to 1 if shared memory segments are released deferred. */
 #undef IPC_RMID_DEFERRED_RELEASE
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
 #undef LT_OBJDIR
 
 /* Define to 1 if you don't have the fd_set typedef. */

@@ -185,8 +185,6 @@ gimp_image_profile_view_query (GimpImageProfileView *view)
   g_free (desc);
   g_free (info);
 
-  view->idle_id = 0;
-
   return FALSE;
 }
 

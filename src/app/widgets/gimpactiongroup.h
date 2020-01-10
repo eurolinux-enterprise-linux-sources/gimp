@@ -50,10 +50,6 @@ struct _GimpActionGroupClass
   GtkActionGroupClass  parent_class;
 
   GHashTable          *groups;
-
-  /* signals */
-  void (* action_added) (GimpActionGroup *group,
-                         GtkAction       *action);
 };
 
 struct _GimpActionEntry

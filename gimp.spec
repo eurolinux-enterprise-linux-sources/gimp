@@ -81,23 +81,23 @@
 Summary:        GNU Image Manipulation Program
 Name:           gimp
 Epoch:          2
-Version:        2.8.22
-Release:        %{?prerelprefix}1%{dotprerel}%{dotgitrev}%{?dist}
+Version:        2.8.8
+Release:        %{?prerelprefix}3%{dotprerel}%{dotgitrev}%{?dist}
 
-# Compute some version related macros.
-# Ugly, need to get quoting percent signs straight.
-%global major %(ver=%{version}; echo ${ver%%%%.*})
-%global minor %(ver=%{version}; ver=${ver#%major.}; echo ${ver%%%%.*})
-%global micro %(ver=%{version}; ver=${ver#%major.%minor.}; echo ${ver%%%%.*})
-%global binver %{major}.%{minor}
+# Compute some version related macros
+# Ugly hack, you need to get your quoting backslashes/percent signs straight
+%global major %(ver=%version; echo ${ver%%%%.*})
+%global minor %(ver=%version; ver=${ver#%major.}; echo ${ver%%%%.*})
+%global micro %(ver=%version; ver=${ver#%major.%minor.}; echo ${ver%%%%.*})
+%global binver %major.%minor
 %global interface_age 0
-%global gettext_version %{major}0
-%global lib_api_version %{major}.0
+%global gettext_version 20
+%global lib_api_version 2.0
 %if ! %unstable
 %global lib_minor %(echo $[%minor * 100])
 %global lib_micro %micro
 %else # unstable
-%global lib_minor %(echo $[%minor * 100 + %{micro}])
+%global lib_minor %(echo $[%minor * 100 + %micro])
 %global lib_micro 0
 %endif # unstable
 
@@ -113,6 +113,7 @@ URL:            http://www.gimp.org/
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root-%(%__id_u -n)
 Obsoletes:      gimp-perl < 2:2.0
 Obsoletes:      gimp < 2:2.6.0-3
+BuildRequires:  chrpath >= 0.13-5
 %if %{with aalib}
 BuildRequires:  aalib-devel
 %endif
@@ -137,7 +138,6 @@ BuildRequires:  jasper-devel
 %if %{with lcms}
 BuildRequires:  lcms2-devel >= 2.2
 %endif
-BuildRequires:  libappstream-glib
 BuildRequires:  libexif-devel >= 0.6.15
 BuildRequires:  libgnomeui-devel >= 2.10.0
 %if %{with gudev}
@@ -169,11 +169,10 @@ BuildRequires:  zlib-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libXpm-devel
-
-BuildRequires:  chrpath >= 0.13-5
+BuildRequires:  sed
 BuildRequires:  intltool
 BuildRequires:  gettext
-BuildRequires:  pkgconfig
+BuildRequires:  findutils
 
 Requires:       babl%{?_isa} >= 0.1.10
 Requires:       gegl%{?_isa} >= 0.2.0
@@ -197,7 +196,7 @@ Requires:       gimp-libs%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Obsoletes:      gimp-help-browser <= %{?epoch:%{epoch}:}%{version}-%{release}
 %endif
 
-Source0:        http://download.gimp.org/pub/gimp/v%{binver}/gimp-%{version}%{dashprerel}.tar.bz2
+Source0:        ftp://ftp.gimp.org/pub/gimp/v%{binver}/gimp-%{version}%{dashprerel}.tar.bz2
 
 %if %{defined gitrev}
 Patch0:         gimp-%{version}%{dashprerel}-git%{gitrev}.patch.bz2
@@ -206,6 +205,19 @@ Patch0:         gimp-%{version}%{dashprerel}-git%{gitrev}.patch.bz2
 # Try using the system monitor profile for color management by default.
 # Fedora specific.
 Patch1:         gimp-2.8.2-cm-system-monitor-profile-by-default.patch
+
+# Avoid crash in lcms plug-in.
+# Upstream commit dc6ccc17495bcabbd96d4c18616cb4b57bd07ea6
+Patch2:         gimp-2.8.8-lcms-profile-crash.patch
+
+# Fix problems found during static code check (Coverity).
+# Upstream commit dc8bb4eecf43eadae1bc562def7569e59d6515b7
+# Upstream commit 6abd0f2438dd3b025b1224ab6a473615c17f3418
+# Upstream commit 8082363e9c887b9f31e43b7fc947e1867f9c087b
+# Upstream commit 5c2f97f9f274bc20eef4ffd55c28156c39254343
+# Upstream commit d291de0949c13eb2195158f6fbf41da2afe46cb9
+# Upstream commit 92a0387adc5a0e78501f6151b1d52c4c96f684a8
+Patch3:         gimp-2.8.8-static-code-check.patch
 
 # use external help browser directly if help browser plug-in is not built
 Patch100:       gimp-2.8.6-external-help-browser.patch
@@ -237,7 +249,6 @@ Requires:       gimp-devel-tools = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:       gtk2-devel
 Requires:       glib2-devel
 Requires:       pkgconfig
-Requires:       rpm >= 4.11.0
 
 %description devel
 The gimp-devel package contains the static libraries and header files
@@ -259,6 +270,7 @@ Image Manipulation Program (GIMP) plug-ins and extensions.
 Summary:        GIMP help browser plug-in
 Group:          Applications/Multimedia
 License:        GPLv3+
+Obsoletes:      gimp < 2:2.6.0-3
 Requires:       gimp%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 
 %description help-browser
@@ -296,6 +308,8 @@ EOF
 %endif
 
 %patch1 -p1 -b .cm-system-monitor-profile-by-default
+%patch2 -p1 -b .lcms-profile-crash
+%patch3 -p1 -b .static-code-check
 
 %if ! %{with helpbrowser}
 %patch100 -p1 -b .external-help-browser
@@ -309,8 +323,8 @@ EOF
 %global _hardened_build 1
 %else
 # fake things
-export CFLAGS='-fPIC %{optflags}'
-export CXXFLAGS='-fPIC %{optflags}'
+export CFLAGS='-fPIC %optflags'
+export CXXFLAGS='-fPIC %optflags'
 export LDFLAGS='-pie'
 %endif
 %endif
@@ -372,70 +386,23 @@ export LDFLAGS='-pie'
 
 make %{?_smp_mflags}
 
-# Generate RPM macros from pkg-config data:
-# %%_gimp_datadir -- toplevel directory for brushes, gradients, scripts, ...
-# %%_gimp_libdir -- toplevel directory for modules, plug-ins, ...
-# %%_gimp_sysconfdir -- system-wide runtime configuration
-# %%_gimp_localedir -- toplevel directory for translation files
-# %%_gimp_scriptdir -- script-fu scripts directory
-# %%_gimp_plugindir -- plug-in directory
-gimp_pc_extract_normalize() {
-    PKG_CONFIG_PATH="$PWD" \
-        pkg-config --variable="$1" gimp-%{lib_api_version} | \
-    sed \
-        -e 's|^%_mandir|%%{_mandir}|' \
-        -e 's|^%_infodir|%%{_infodir}|' \
-        -e 's|^%_includedir|%%{_includedir}|' \
-        -e 's|^%_libdir|%%{_libdir}|' \
-        -e 's|^%_localstatedir|%%{_localstatedir}|' \
-        -e 's|^%_sharedstatedir|%%{_sharedstatedir}|' \
-        -e 's|^%_sysconfdir|%%{_sysconfdir}|' \
-        -e 's|^%_datadir|%%{_datadir}|' \
-        -e 's|^%_libexecdir|%%{_libexecdir}|' \
-        -e 's|^%_sbindir|%%{_sbindir}|' \
-        -e 's|^%_bindir|%%{_bindir}|' \
-        -e 's|^%_exec_prefix|%%{_exec_prefix}|' \
-        -e 's|^%_prefix|%%{_prefix}|'
-}
-
-_gimp_datadir="$(gimp_pc_extract_normalize gimpdatadir)"
-_gimp_libdir="$(gimp_pc_extract_normalize gimplibdir)"
-_gimp_sysconfdir="$(gimp_pc_extract_normalize gimpsysconfdir)"
-_gimp_localedir="$(gimp_pc_extract_normalize gimplocaledir)"
-_gimp_scriptdir="${_gimp_datadir}/scripts"
-_gimp_plugindir="${_gimp_libdir}/plug-ins"
-
-cat << EOF > macros.gimp
-# RPM macros for GIMP
-
-%%_gimp_datadir ${_gimp_datadir}
-%%_gimp_libdir ${_gimp_libdir}
-%%_gimp_sysconfdir ${_gimp_sysconfdir}
-%%_gimp_localedir ${_gimp_localedir}
-%%_gimp_scriptdir ${_gimp_scriptdir}
-%%_gimp_plugindir ${_gimp_plugindir}
-EOF
-
 %install
 rm -rf %{buildroot}
-make DESTDIR=%{buildroot} install
-install -D -m0644 macros.gimp %{buildroot}%{_rpmconfigdir}/macros.d/macros.gimp
 
-# Update the screenshot shown in the software center
-#
-# NOTE: It would be *awesome* if this file was pushed upstream.
-#
-# See http://people.freedesktop.org/~hughsient/appdata/#screenshots for more details.
-#
-appstream-util replace-screenshots %{buildroot}%{_datadir}/appdata/gimp.appdata.xml \
-  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/gimp/a.png \
-  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/gimp/b.png 
+# makeinstall macro won't work here - libexec is overriden
+make DESTDIR=%{buildroot} install
+
+# "make install" doesn't install appdata file as of version 2.8.8
+install -D -m 0644 desktop/gimp.appdata.xml \
+    %{buildroot}%{_datadir}/appdata/gimp.appdata.xml
 
 # remove rpaths
 find %buildroot -type f -print0 | xargs -0 -L 20 chrpath --delete --keepgoing 2>/dev/null || :
 
+%ifos linux
 # remove .la files
 find %buildroot -name \*.la -exec %__rm -f {} \;
+%endif
 
 #
 # Plugins and modules change often (grab the executeable ones)
@@ -488,7 +455,7 @@ ln -snf gimprc-%{binver}.5 %{buildroot}/%{_mandir}/man5/gimprc.5
 # Hardcode python interpreter in shipped python plug-ins. This actually has no
 # effect because gimp maps hashbangs with and without the /usr/bin/env detour
 # to the system python interpreter, but this will avoid false alarms.
-grep -E -rl '^#!\s*%{_bindir}/env\s+python' --include=\*.py "%{buildroot}" |
+egrep -rl '^#!\s*%{_bindir}/env\s+python' --include=\*.py "%buildroot" |
     while read file; do
         sed -r '1s,^#!\s*%{_bindir}/env\s+python,#!%{__python},' -i "$file"
     done
@@ -496,7 +463,7 @@ grep -E -rl '^#!\s*%{_bindir}/env\s+python' --include=\*.py "%{buildroot}" |
 
 %check
 # skip tests known to be problematic in a specific version
-%if "%{version}" == "%{?skip_checks_version}"
+%if "%version" == "%{?skip_checks_version}"
 pushd app/tests
 for problematic in %{?skip_checks}; do
     rm -f "$problematic"
@@ -638,7 +605,6 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_datadir}/aclocal/*.m4
 %{_includedir}/gimp-%{lib_api_version}
 %{_libdir}/pkgconfig/*
-%{_rpmconfigdir}/macros.d/macros.gimp
 
 %files devel-tools
 %defattr (-, root, root, 0755)
@@ -657,68 +623,6 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %endif
 
 %changelog
-* Tue Jul 18 2017 Josef Ridky <jridky@redhat.com> - 2:2.8.22-1
-- Rebase to the latest upstream release (2.8.22) - (#1210840)
-
-* Thu Jun 30 2016 Nils Philippsen <nils@redhat.com> - 2:2.8.16-3
-- fix multiple use-after-free bugs when parsing XCF channel and layer
-  properties (#1348617)
-
-* Thu Apr 07 2016 Nils Philippsen <nils@redhat.com> - 2:2.8.16-2
-- add back obsoletes necessary for RHEL
-
-* Sun Nov 22 2015 Nils Philippsen <nils@redhat.com> - 2:2.8.16-1
-- version 2.8.16
-
-* Fri Jul 17 2015 Nils Philippsen <nils@redhat.com> - 2:2.8.14-3
-- export-dialog-destroyed-crash patch: avoid subsequent warnings
-
-* Thu Jul 16 2015 Nils Philippsen <nils@redhat.com> - 2:2.8.14-2
-- fix linking problem
-- use %%buildroot macro consistently again
-
-* Tue Jul 14 2015 Nils Philippsen <nils@redhat.com> - 2:2.8.14-2
-- avoid destroying dialog and occasional crashes while exporting (#1215905)
-
-* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:2.8.14-1.2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
-
-* Mon Mar 30 2015 Richard Hughes <rhughes@redhat.com> - 2:2.8.14-1.1
-- Use better AppData screenshots
-
-* Tue Aug 26 2014 Nils Philippsen <nils@redhat.com> - 2:2.8.14-1
-- version 2.8.14
-
-* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:2.8.10-6.2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
-
-* Mon Jun 23 2014 Nils Philippsen <nils@redhat.com>
-- update source URL
-
-* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:2.8.10-6.1
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
-
-* Wed May 28 2014 Nils Philippsen <nils@redhat.com> - 2:2.8.10-6
-- remove ancient obsoletes (#1002109)
-
-* Thu Feb 13 2014 Nils Philippsen <nils@redhat.com> - 2:2.8.10-5
-- cope with freetype >= 2.5.1 include madness
-
-* Wed Feb 12 2014 Nils Philippsen <nils@redhat.com> - 2:2.8.10-5
-- remove BRs contained in the minimal build environment
-- group BRs into libraries and tools
-- remove various old cruft
-- ship RPM macros for packaging plug-ins e.a. (#1063144)
-
-* Wed Dec 04 2013 Nils Philippsen <nils@redhat.com> - 2:2.8.10-4
-- avoid buffer overflows in file-xwd plug-in (CVE-2013-1913, CVE-2013-1978)
-
-* Fri Nov 29 2013 Nils Philippsen <nils@redhat.com> - 2:2.8.10-1
-- version 2.8.10
-
-* Tue Nov 26 2013 Nils Philippsen <nils@redhat.com> - 2:2.8.10-1
-- use grep -E instead of egrep
-
 * Fri Nov 08 2013 Nils Philippsen <nils@redhat.com> - 2:2.8.8-3
 - file-bmp: don't close already closed FD
 

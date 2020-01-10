@@ -553,37 +553,22 @@ repaint (ppm_t *p, ppm_t *a)
     }
   else
     {
-      int dx, dy;
-
+      scale = runningvals.paper_scale / 100.0;
       ppm_new (&tmp, p->width, p->height);
       ppm_load (runningvals.selected_paper, &paper_ppm);
-
-      if (runningvals.paper_scale != 100.0)
-        {
-          scale = runningvals.paper_scale / 100.0;
-          resize (&paper_ppm, paper_ppm.width * scale, paper_ppm.height * scale);
-        }
-
+      resize (&paper_ppm, paper_ppm.width * scale, paper_ppm.height * scale);
       if (runningvals.paper_invert)
         ppm_apply_gamma (&paper_ppm, -1.0, 1, 1, 1);
-
-      dx = runningvals.general_paint_edges ? paper_ppm.width - maxbrushwidth : 0;
-      dy = runningvals.general_paint_edges ? paper_ppm.height - maxbrushheight : 0;
-
-      for (y = 0; y < tmp.height; y++)
+      for (x = 0; x < tmp.width; x++)
         {
-          int lx;
-          int ry = (y + dy) % paper_ppm.height;
+          int rx = x % paper_ppm.width;
 
-          for (x = 0; x < tmp.width; x+=lx)
+          for (y = 0; y < tmp.height; y++)
             {
-              int rx = (x + dx) % paper_ppm.width;
-
-              lx = MIN (tmp.width - x, paper_ppm.width - rx);
-
+              int ry = y % paper_ppm.height;
               memcpy (&tmp.col[y * tmp.width * 3 + x * 3],
-                      &paper_ppm.col[ry * paper_ppm.width * 3 + rx * 3],
-                      3 * lx);
+                      &paper_ppm.col[ry*paper_ppm.width*3+rx*3],
+                      3);
             }
         }
     }

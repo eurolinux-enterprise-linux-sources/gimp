@@ -301,7 +301,7 @@ borderaverage (GimpDrawable *drawable,
     }
 
   /* return the color */
-  gimp_rgba_set_uchar (result, r, g, b, 255);
+  gimp_rgb_set_uchar (result, r, g, b);
 
   g_free (buffer);
   g_free (cube);

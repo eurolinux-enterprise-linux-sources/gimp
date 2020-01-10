@@ -38,11 +38,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#ifdef G_OS_WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 /**
  * SECTION: gimppickbutton
  * @title: GimpPickButton
@@ -372,34 +367,6 @@ gimp_pick_button_pick (GdkScreen      *screen,
                        gint            y_root,
                        GimpPickButton *button)
 {
-
-#ifdef G_OS_WIN32
-
-  HDC      hdc;
-  RECT     rect;
-  COLORREF win32_color;
-  GimpRGB  rgb;
-
-  /* For MS Windows, use native GDI functions to get the pixel, as
-   * cairo does not handle the case where you have multiple monitors
-   * with a monitor on the left or above the primary monitor.  That
-   * scenario create a cairo primary surface with negative extent,
-   * which is not handled properly (bug 740634).
-   */
-
-  hdc = GetDC (HWND_DESKTOP);
-  GetClipBox (hdc, &rect);
-  win32_color = GetPixel (hdc, x_root + rect.left, y_root + rect.top);
-  ReleaseDC (HWND_DESKTOP, hdc);
-
-  gimp_rgba_set_uchar (&rgb,
-                       GetRValue (win32_color),
-                       GetGValue (win32_color),
-                       GetBValue (win32_color),
-                       255);
-
-#else
-
 #ifndef GDK_WINDOWING_QUARTZ
 
   GdkWindow       *root_window = gdk_screen_get_root_window (screen);
@@ -423,7 +390,7 @@ gimp_pick_button_pick (GdkScreen      *screen,
 
   cairo_surface_destroy (image);
 
-  gimp_rgba_set_uchar (&rgb, color[0], color[1], color[2], 255);
+  gimp_rgba_set_uchar (&rgb, color[0], color[1], color[2], 1.0);
 
 #else /* GDK_WINDOWING_QUARTZ */
 
@@ -446,8 +413,6 @@ gimp_pick_button_pick (GdkScreen      *screen,
   CFRelease (pixel_data);
 
 #endif /* GDK_WINDOWING_QUARTZ */
-
-#endif /* G_OS_WIN32 */
 
   g_signal_emit (button, pick_button_signals[COLOR_PICKED], 0, &rgb);
 }

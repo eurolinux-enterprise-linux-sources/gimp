@@ -264,17 +264,12 @@ gimp_plug_in_open (GimpPlugIn         *plug_in,
   /* Prevent the plug-in from inheriting our ends of the pipes */
   SetHandleInformation ((HANDLE) _get_osfhandle (my_read[0]), HANDLE_FLAG_INHERIT, 0);
   SetHandleInformation ((HANDLE) _get_osfhandle (my_write[1]), HANDLE_FLAG_INHERIT, 0);
+#endif
 
-  plug_in->my_read   = g_io_channel_win32_new_fd (my_read[0]);
-  plug_in->my_write  = g_io_channel_win32_new_fd (my_write[1]);
-  plug_in->his_read  = g_io_channel_win32_new_fd (my_write[0]);
-  plug_in->his_write = g_io_channel_win32_new_fd (my_read[1]);
-#else
   plug_in->my_read   = g_io_channel_unix_new (my_read[0]);
   plug_in->my_write  = g_io_channel_unix_new (my_write[1]);
   plug_in->his_read  = g_io_channel_unix_new (my_write[0]);
   plug_in->his_write = g_io_channel_unix_new (my_read[1]);
-#endif
 
   g_io_channel_set_encoding (plug_in->my_read, NULL, NULL);
   g_io_channel_set_encoding (plug_in->my_write, NULL, NULL);
@@ -481,7 +476,7 @@ gimp_plug_in_close (GimpPlugIn *plug_in,
           DWORD dwExitCode = STILL_ACTIVE;
           DWORD dwTries    = 10;
 
-          while (dwExitCode == STILL_ACTIVE &&
+          while (dwExitCode == dwExitCode &&
                  GetExitCodeProcess ((HANDLE) plug_in->pid, &dwExitCode) &&
                  (dwTries > 0))
             {

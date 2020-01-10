@@ -1,13 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-if PLATFORM_OSX
-xobjective_c = "-xobjective-c"
-endif
-
 AM_CPPFLAGS = \
-	-DGIMPDIR=\""$(gimpdir)"\"			\
 	-DGIMP_APP_VERSION=\"$(GIMP_APP_VERSION)\"	\
-	-DGIMP_USER_VERSION=\"$(GIMP_USER_VERSION)\"	\
 	-DG_LOG_DOMAIN=\"Gimp-Core\"
 
 INCLUDES = \
@@ -18,8 +12,7 @@ INCLUDES = \
 	$(CAIRO_CFLAGS)		\
 	$(GEGL_CFLAGS)		\
 	$(GDK_PIXBUF_CFLAGS)	\
-	-I$(includedir)					\
-	$(xobjective_c)
+	-I$(includedir)
 
 noinst_LIBRARIES = libappcore.a
 

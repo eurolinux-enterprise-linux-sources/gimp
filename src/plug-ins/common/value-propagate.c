@@ -468,11 +468,7 @@ value_propagate_body (GimpDrawable *drawable,
   nr = next_row + bytes;
 
   prepare_row (&srcRgn, pr, begx, (0 < begy) ? begy : begy - 1, endx-begx);
-
-  if (0 < begy)
-    prepare_row (&srcRgn, cr, begx, begy, endx-begx);
-  else
-    memcpy (cur_row, prev_row, (width + 2) * bytes);
+  prepare_row (&srcRgn, cr, begx, begy, endx-begx);
 
   best = g_new (guchar, bytes);
 

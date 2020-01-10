@@ -128,7 +128,6 @@
                                             "Drop Shadow"
                                             shadow-opacity
                                             NORMAL-MODE)))
-    (gimp-image-set-active-layer image drawable)
     (gimp-image-insert-layer image shadow-layer 0 -1)
     (gimp-layer-set-offsets shadow-layer
                             shadow-offset-x
